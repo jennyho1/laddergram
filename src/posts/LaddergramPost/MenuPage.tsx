@@ -1,10 +1,10 @@
 import { Devvit, useAsync } from "@devvit/public-api";
 
-interface MenuPostProps {
+interface MenuPageProps {
 	onPress: () => void | Promise<void>;
 }
 
-export const MenuPost = (props: MenuPostProps): JSX.Element => {
+export const MenuPage = (props: MenuPageProps): JSX.Element => {
   const { onPress } = props;
 
   return (

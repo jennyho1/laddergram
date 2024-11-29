@@ -2,11 +2,11 @@ import type { Context } from "@devvit/public-api";
 import { Devvit, useAsync, useState } from "@devvit/public-api";
 import { Service } from "../service/service.js";
 
-import { MenuPost } from "./MenuPost/MenuPost.js";
-import { GamePost } from "./GamePost/GamePost.js";
+import { LaddergramPost } from "./LaddergramPost/LaddergramPost.js";
 import { KeyboardButton } from "../components/KeyboardButton.js";
 import { LetterBlock } from "../components/LetterBlock.js";
 import { PostData } from "../types/PostData.js";
+import { UserData } from "../types/UserData.js";
 
 /*
  * Page Router
@@ -17,7 +17,41 @@ import { PostData } from "../types/PostData.js";
 
 export const Router: Devvit.CustomPostComponent = (context: Context) => {
   const service = new Service(context);
-  const [page, setPage] = useState("game");
+  const [postType, setPostType] = useState("laddergram");
+
+	// get the user's information (code taken from Pixelery source code)
+	const { data: username, loading: usernameLoading } = useAsync(
+    async () => {
+      if (!context.userId) return null; // Return early if no userId
+      const cacheKey = 'cache:userId-username';
+      const cache = await context.redis.hGet(cacheKey, context.userId);
+      if (cache) {
+        return cache;
+      } else {
+        const user = await context.reddit.getUserById(context.userId);
+        if (user) {
+          await context.redis.hSet(cacheKey, {
+            [context.userId]: user.username,
+          });
+          return user.username;
+        }
+      }
+      return null;
+    },
+    {
+      depends: [],
+    }
+  );
+	const { data: userData, loading: userDataLoading } = useAsync<UserData>(
+    async () => {
+      return await service.getUserData(username!, context.postId!);
+    },
+    {
+      depends: [username],
+    }
+  );
+
+
 
   // Load the post data from Redis
   const { data: postData, loading: postDataLoading } = useAsync<PostData>(
@@ -27,7 +61,15 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
   );
 
   //return loading
-  if (postData === null || postDataLoading || !postData.startWord || !postData.targetWord ) {
+  if (
+		usernameLoading ||
+    postData === null ||
+    postDataLoading ||
+    !postData.startWord ||
+    !postData.targetWord ||
+    userData === null ||
+    userDataLoading
+  ) {
     return (
       <vstack alignment="center middle" width="100%" height="100%">
         <text color="global-white">Error: undefined</text>
@@ -35,25 +77,8 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     );
   }
 
-	const pages: Record<string, JSX.Element> = {
-    menu: (
-      <MenuPost
-        onPress={() => {
-          setPage("game");
-        }}
-      />
-    ),
-    game: (
-      <GamePost
-				postData={postData}
-        onInfoPress={() => setPage("menu")}
-      />
-    ),
-    result: (
-      <vstack alignment="center middle">
-        <text color="global-white">Result Post</text>
-      </vstack>
-    ),
+  const postTypes: Record<string, JSX.Element> = {
+    laddergram: <LaddergramPost userData={userData} postData={postData}/>,
   };
 
   /*
@@ -77,7 +102,7 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
           description="Zigzag green background"
           resizeMode="cover"
         />
-        {pages[page] || (
+        {postTypes[postType] || (
           <vstack alignment="center middle" width="100%" height="100%">
             <text color="global-white">Error: Unknown post type</text>
           </vstack>
