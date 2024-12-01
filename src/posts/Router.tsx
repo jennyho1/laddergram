@@ -7,6 +7,8 @@ import { KeyboardButton } from "../components/KeyboardButton.js";
 import { LetterBlock } from "../components/LetterBlock.js";
 import { PostData } from "../types/PostData.js";
 import { UserData } from "../types/UserData.js";
+import { LoadingState } from "../components/LoadingState.js";
+import { Alert } from "../components/Alert.js";
 
 /*
  * Page Router
@@ -71,9 +73,7 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     userDataLoading
   ) {
     return (
-      <vstack alignment="center middle" width="100%" height="100%">
-        <text color="global-white">Error: undefined</text>
-      </vstack>
+      <LoadingState/>
     );
   }
 

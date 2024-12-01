@@ -1,10 +1,10 @@
-import { Devvit, useAsync } from "@devvit/public-api";
+import { Devvit } from "@devvit/public-api";
 
-interface MenuPageProps {
+interface InfoPageProps {
 	onPress: () => void | Promise<void>;
 }
 
-export const MenuPage = (props: MenuPageProps): JSX.Element => {
+export const InfoPage = (props: InfoPageProps): JSX.Element => {
   const { onPress } = props;
 
   return (
@@ -27,7 +27,7 @@ export const MenuPage = (props: MenuPageProps): JSX.Element => {
         <text size="xxlarge" weight="bold" color="global-white" >
           Laddergram
         </text>
-        <text alignment="center" maxWidth="250px" color="global-white" wrap>
+        <text alignment="center" maxWidth="290px" color="global-white" size="large" wrap>
           Start with a word and change one letter at a time to create a new word
           with each step. The goal is to reach the target word in the fewest
           steps possible.

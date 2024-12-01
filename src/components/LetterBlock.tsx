@@ -2,11 +2,12 @@ import { Devvit } from "@devvit/public-api";
 
 interface LetterBlockProps {
   label: string;
-  backgroundColor?: string;
+	correct?: boolean;
+	highlight?: boolean;
 }
 
 export const LetterBlock = (props: LetterBlockProps): JSX.Element => {
-  const { label, backgroundColor } = props;
+  const { label, correct, highlight } = props;
 	const blockSize = "36px";
 
   return (
@@ -14,9 +15,9 @@ export const LetterBlock = (props: LetterBlockProps): JSX.Element => {
       width={blockSize}
       height={blockSize}
       alignment="center middle"
-      backgroundColor={backgroundColor || "#c19b7a"}
+      backgroundColor={correct ? "#55a356" :"#c19b7a"}
       border="thick"
-      borderColor="#3a322b"
+      borderColor={highlight ? "white" : "#3a322b"}
     >
       <text size="xxlarge" color="#3a322b" weight="bold">
         {label}

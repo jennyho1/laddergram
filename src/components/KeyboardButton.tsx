@@ -15,12 +15,12 @@ export const KeyboardButton = (props: KeyboardButtonProps): JSX.Element => {
       width={width || "22px"}
       height="22px"
       alignment="center middle"
-      backgroundColor={backgroundColor || "KiwiGreen-200"}
+      backgroundColor={backgroundColor || "#c19b7a"}
       border="thin"
       borderColor="#3a322b"
       onPress={onPress}
     >
-      <text color="#3a322b">{label}</text>
+      <text color="#3a322b" weight="bold">{label}</text>
     </vstack>
   );
 };

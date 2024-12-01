@@ -1,18 +1,19 @@
 // Learn more at developers.reddit.com/docs
 import { Devvit, useState } from "@devvit/public-api";
-import { Router } from './posts/Router.js';
+import { Router } from "./posts/Router.js";
 import { Service } from "./service/service.js";
+import { LoadingState } from "./components/LoadingState.js";
 
-import words_3letter from './data/words_3letter.json';
-import words_4letter from './data/words_4letter.json';
-import words_5letter from './data/words_5letter.json';
+import words_3letter from "./data/words_3letter.json";
+import words_4letter from "./data/words_4letter.json";
+import words_5letter from "./data/words_5letter.json";
 
 /*
  * Enable plugins
  */
 Devvit.configure({
   redditAPI: true,
-	redis: true,
+  redis: true,
 });
 
 /*
@@ -21,14 +22,13 @@ Devvit.configure({
 Devvit.addCustomPostType({
   name: "Laddergram Post",
   height: "tall",
-  render: Router
+  render: Router,
 });
 
 const newGameForm = Devvit.createForm(
   {
     title: "Add New Laddergram Game",
-    description:
-      "Both words must be the same length and have 3-5 letters.",
+    description: "Both words must be the same length and have 3-5 letters.",
     fields: [
       {
         type: "string",
@@ -47,73 +47,53 @@ const newGameForm = Devvit.createForm(
     cancelLabel: "Cancel",
   },
   async (event, context) => {
-		const { reddit, ui } = context;
-		const service = new Service(context)
-		const startWord = event.values.startword;
-		const targetWord = event.values.targetword;
+    const { reddit, ui } = context;
+    const service = new Service(context);
+    const startWord = event.values.startword.toLowerCase();
+    const targetWord = event.values.targetword.toLowerCase();
     // onSubmit handler
     if (startWord.length != targetWord.length) {
       ui.showToast("Invalid: Words have different length");
-    } else if (startWord.length > 5 || startWord.length <= 2) {
-      ui.showToast("Invalid: Words must be 3-5 letters");
     } else if (startWord === targetWord) {
-			ui.showToast("Invalid: Starting word must be different from target word");
-		} else {
-			if (startWord.length === 3) {
-				if (!words_3letter.includes(startWord)){
-					ui.showToast("Invalid: Starting word is not a valid word");
-					return;
-				}
-				if (!words_3letter.includes(targetWord)){
-					ui.showToast("Invalid: Target word is not a valid word");
-					return;
-				}
-			} else if (startWord.length === 4) {
-				if (!words_4letter.includes(startWord)){
-					ui.showToast("Invalid: Starting word is not a valid word");
-					return;
-				}
-				if (!words_4letter.includes(targetWord)){
-					ui.showToast("Invalid: Target word is not a valid word");
-					return;
-				}
-			} else if (startWord.length === 5) {
-				if (!words_5letter.includes(startWord)){
-					ui.showToast("Invalid: Starting word is not a valid word");
-					return;
-				}
-				if (!words_5letter.includes(targetWord)){
-					ui.showToast("Invalid: Target word is not a valid word");
-					return;
-				}
-			}
+      ui.showToast("Invalid: Starting word must be different from target word");
+    } else {
+      const wordLists: { [key: number]: string[] } = {
+        3: words_3letter,
+        4: words_4letter,
+        5: words_5letter,
+      };
 
-			// create laddergram post
+      // Check if word length is valid and both words are in the list
+      const wordList = wordLists[startWord.length];
+      if (!wordList) {
+        ui.showToast("Invalid: Unsupported word length");
+        return;
+      } else if (!wordList.includes(startWord) || !wordList.includes(targetWord)) {
+        ui.showToast("Invalid: Starting word is not in the word list");
+        return;
+      }
+
+      // create laddergram post
       const subreddit = await reddit.getCurrentSubreddit();
       const post = await reddit.submitPost({
         title: "Can you solve this laddergram?",
         subredditName: subreddit.name,
-        // The preview appears while the post loads
-        preview: (
-          <vstack height="100%" width="100%" alignment="middle center">
-            <text size="large">Loading ...</text>
-          </vstack>
-        ),
+        preview: <LoadingState />,
       });
 
-			// update database with new post
-			service.submitLaddergramPost({
-				postId: post.id,
-				startWord: startWord,
-				targetWord: targetWord,
-				authorUsername: post.authorName,
-			});
+      // update database with new post
+      service.submitLaddergramPost({
+        postId: post.id,
+        startWord: startWord.toUpperCase(),
+        targetWord: targetWord.toUpperCase(),
+        authorUsername: post.authorName,
+      });
 
       context.ui.showToast({
         text: "Sucess: Created laddergram post!",
         appearance: "success",
       });
-			context.ui.navigateTo(post);
+      context.ui.navigateTo(post);
     }
   }
 );
@@ -129,8 +109,5 @@ Devvit.addMenuItem({
     context.ui.showForm(newGameForm);
   },
 });
-
-
-
 
 export default Devvit;
