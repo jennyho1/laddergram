@@ -68,7 +68,10 @@ const newGameForm = Devvit.createForm(
       if (!wordList) {
         ui.showToast("Invalid: Unsupported word length");
         return;
-      } else if (!wordList.includes(startWord) || !wordList.includes(targetWord)) {
+      } else if (
+        !wordList.includes(startWord) ||
+        !wordList.includes(targetWord)
+      ) {
         ui.showToast("Invalid: Starting word is not in the word list");
         return;
       }
@@ -82,8 +85,9 @@ const newGameForm = Devvit.createForm(
       });
 
       // update database with new post
-      service.submitLaddergramPost({
+      service.saveLaddergramPost({
         postId: post.id,
+				postType: "laddergram",
         startWord: startWord.toUpperCase(),
         targetWord: targetWord.toUpperCase(),
         authorUsername: post.authorName,
@@ -102,11 +106,29 @@ const newGameForm = Devvit.createForm(
  * Install action
  */
 Devvit.addMenuItem({
-  label: "[Laddergram] Add new post",
+  label: "[Laddergram] Add New Post",
   location: "subreddit",
   forUserType: "moderator",
   onPress: async (_event, context) => {
     context.ui.showForm(newGameForm);
+  },
+});
+
+Devvit.addMenuItem({
+  label: "[Laddergram] New Pinned Post",
+  location: "subreddit",
+  forUserType: "moderator",
+  onPress: async (_event, context) => {
+    const service = new Service(context);
+    const community = await context.reddit.getCurrentSubreddit();
+    const post = await context.reddit.submitPost({
+      title: "Let's Play Laddergram!",
+      subredditName: community.name,
+      preview: <LoadingState />,
+    });
+    await post.sticky();
+    await service.savePinnedPost(post.id);
+    context.ui.navigateTo(post);
   },
 });
 

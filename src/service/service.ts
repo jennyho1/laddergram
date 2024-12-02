@@ -5,7 +5,11 @@ import {
   UIClient,
 } from "@devvit/public-api";
 
-import type { PostData } from "../types/PostData.js";
+import type {
+  LaddergramPostData,
+  PinnedPostData,
+  PostData,
+} from "../types/PostData.js";
 import type { SolvedResultData } from "../types/SolvedResultData.js";
 import { UserData } from "../types/UserData.js";
 import { Status } from "../types/Status.js";
@@ -31,17 +35,26 @@ export class Service {
     this.ui = context.ui;
   }
 
-  /*
-   * Submit new laddergram post
-   */
+  /************************************************************************
+   * Post Data
+   ************************************************************************/
   readonly #postDataKey = (postId: string): string => `post:${postId}`;
 
-  async submitLaddergramPost(data: PostData): Promise<void> {
-    const key = this.#postDataKey(data.postId);
+	async getPostType(postId: string): Promise<string> {
+    const key = this.#postDataKey(postId);
+    const postType = await this.redis.hGet(key, "postType");
+    return postType ?? "laddergram";
+  }
 
+  /*
+   * Laddergram Post
+   */
+  async saveLaddergramPost(data: LaddergramPostData): Promise<void> {
+    const key = this.#postDataKey(data.postId);
     // Save post object
     await this.redis.hSet(key, {
       postId: data.postId,
+      postType: data.postType,
       startWord: data.startWord,
       targetWord: data.targetWord,
       authorUsername: data.authorUsername,
@@ -49,13 +62,11 @@ export class Service {
     });
   }
 
-  /*
-   * Get laddergram post by postId
-   */
-  async getLaddergramPost(postId: string): Promise<PostData> {
+  async getLaddergramPost(postId: string): Promise<LaddergramPostData> {
     const postData = await this.redis.hGetAll(this.#postDataKey(postId));
     return {
       postId: postId,
+      postType: "laddergram",
       startWord: postData.startWord,
       targetWord: postData.targetWord,
       authorUsername: postData.authorUsername,
@@ -63,10 +74,30 @@ export class Service {
   }
 
   /*
+   * Pinned Post
+   */
+  async savePinnedPost(postId: string): Promise<void> {
+    const key = this.#postDataKey(postId);
+    await this.redis.hSet(key, {
+      postId: postId,
+      postType: "pinned",
+    });
+  }
+
+  async getPinnedPost(postId: string): Promise<PinnedPostData> {
+    const key = this.#postDataKey(postId);
+    const postType = await this.redis.hGet(key, "postType");
+    return {
+      postId: postId,
+      postType: postType ?? "pinned",
+    };
+  }
+
+  /*
    * Solved posts: username and result
    */
   readonly #postSolvedKey = (postId: string): string => `solved:${postId}`;
-	readonly #postTriesKey = (postId: string): string => `tries:${postId}`;
+  readonly #postTriesKey = (postId: string): string => `tries:${postId}`;
   readonly #postResultKey = (postId: string): string => `result:${postId}`;
   readonly #postScoretKey = (postId: string): string => `score:${postId}`;
 

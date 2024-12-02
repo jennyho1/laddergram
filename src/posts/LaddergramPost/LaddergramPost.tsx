@@ -124,6 +124,7 @@ export const LaddergramPost = (
   const pages: Record<string, JSX.Element> = {
     info: (
       <InfoPage
+				smallScreen={(context.dimensions?.width ?? 0) < 400}
         onPress={() => {
           setPage("game");
         }}

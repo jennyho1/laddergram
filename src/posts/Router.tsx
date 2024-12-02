@@ -5,10 +5,15 @@ import { Service } from "../service/service.js";
 import { LaddergramPost } from "./LaddergramPost/LaddergramPost.js";
 import { KeyboardButton } from "../components/KeyboardButton.js";
 import { LetterBlock } from "../components/LetterBlock.js";
-import { PostData } from "../types/PostData.js";
+import {
+  LaddergramPostData,
+  PinnedPostData,
+  PostData,
+} from "../types/PostData.js";
 import { UserData } from "../types/UserData.js";
 import { LoadingState } from "../components/LoadingState.js";
 import { Alert } from "../components/Alert.js";
+import { PinnedPost } from "./PinnedPost/PinnedPost.js";
 
 /*
  * Page Router
@@ -19,13 +24,12 @@ import { Alert } from "../components/Alert.js";
 
 export const Router: Devvit.CustomPostComponent = (context: Context) => {
   const service = new Service(context);
-  const [postType, setPostType] = useState("laddergram");
 
-	// get the user's information (code taken from Pixelery source code)
-	const { data: username, loading: usernameLoading } = useAsync(
+  // get the user's information (code taken from Pixelery source code)
+  const { data: username, loading: usernameLoading } = useAsync(
     async () => {
       if (!context.userId) return null; // Return early if no userId
-      const cacheKey = 'cache:userId-username';
+      const cacheKey = "cache:userId-username";
       const cache = await context.redis.hGet(cacheKey, context.userId);
       if (cache) {
         return cache;
@@ -44,7 +48,7 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
       depends: [],
     }
   );
-	const { data: userData, loading: userDataLoading } = useAsync<UserData>(
+  const { data: userData, loading: userDataLoading } = useAsync<UserData>(
     async () => {
       return await service.getUserData(username!, context.postId!);
     },
@@ -53,38 +57,45 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     }
   );
 
-
-
   // Load the post data from Redis
-  const { data: postData, loading: postDataLoading } = useAsync<PostData>(
-    async () => {
-      return await service.getLaddergramPost(context.postId!);
+  const { data: postData, loading: postDataLoading } = useAsync<
+    LaddergramPostData | PinnedPostData
+  >(async () => {
+    const postType = await service.getPostType(context.postId!);
+    switch (postType) {
+      case "pinned":
+        return await service.getPinnedPost(context.postId!);
+      default:
+        return await service.getLaddergramPost(context.postId!);
     }
-  );
+  });
 
   //return loading
   if (
-		usernameLoading ||
+    usernameLoading ||
     postData === null ||
     postDataLoading ||
-    !postData.startWord ||
-    !postData.targetWord ||
     userData === null ||
     userDataLoading
   ) {
-    return (
-      <LoadingState/>
-    );
+    return <LoadingState />;
   }
 
+  const postType = postData.postType;
   const postTypes: Record<string, JSX.Element> = {
-    laddergram: <LaddergramPost userData={userData} postData={postData}/>,
+    laddergram: (
+      <LaddergramPost
+        postData={postData as LaddergramPostData}
+        userData={userData}
+      />
+    ),
+    pinned: (<PinnedPost userData={userData}/>),
   };
+
 
   /*
    * Return the custom post unit
    */
-
   return (
     <blocks>
       <zstack
