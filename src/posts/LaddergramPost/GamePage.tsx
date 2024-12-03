@@ -4,6 +4,8 @@ import { LetterBlock } from "../../components/LetterBlock.js";
 import { Keyboard } from "../../components/Keyboard.js";
 import { PostData } from "../../types/PostData.js";
 import { UserData } from "../../types/UserData.js";
+import { MyText } from "../../components/MyText.js";
+import { CustomIcon } from "../../components/CustomIcon.js";
 
 interface GamePageProps {
   postData: PostData;
@@ -40,21 +42,11 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
     <vstack width="100%" height="100%" padding="large">
       {/* nav */}
       <hstack gap="medium" alignment="middle center">
-        <text size="xlarge" weight="bold" color="global-white" grow>
-          Step Counter: {steps.length}
-        </text>
-        <icon
-          name="info"
-          size="large"
-          color="global-white"
-          onPress={() => onNavPress("info")}
-        ></icon>
-        <icon
-          name="statistics"
-          size="large"
-          color="global-white"
-          onPress={() => onNavPress("statistics")}
-        ></icon>
+        <hstack grow>
+          <MyText size={0.6}>{`Step Counter: ${steps.length}`}</MyText>
+        </hstack>
+				<CustomIcon icon="info-fill" onPress={() => onNavPress("info")}/>
+				<CustomIcon icon="topic-business-fill" onPress={() => onNavPress("statistics")}/>
       </hstack>
 
       <spacer height="8px" />
@@ -64,7 +56,7 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
         {/* starting word */}
         <hstack gap="small">
           {postData.startWord.split("").map((char) => (
-            <LetterBlock label={char} />
+						<LetterBlock label={char}/>
           ))}
         </hstack>
         <spacer height={blockSpacing} />

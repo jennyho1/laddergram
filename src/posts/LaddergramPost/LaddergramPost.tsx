@@ -24,7 +24,7 @@ export const LaddergramPost = (
   const service = new Service(context);
 
   const wordLength = postData.startWord.length;
-  const [page, setPage] = useState(userData.solved ? "game" : "info");
+  const [page, setPage] = useState(userData.solved ? "game" : "game"); // ---------TODO change to "info"
   const [steps, setSteps] = useState(() => {
     if (userData.solved) {
       return userData.result
@@ -34,14 +34,12 @@ export const LaddergramPost = (
     }
     return [];
   });
-	const [currentStep, setCurrentStep] = useState<string[]>([]);
+  const [currentStep, setCurrentStep] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [solved, setSolved] = useState<boolean>(userData.solved);
 
   const onKeyboardPressHandler = (value: string): void => {
-		console.log(`steps: ${steps}`)
-		console.log(`currentStep: ${currentStep}`)
-		if (solved) return;
+    if (solved) return;
     if (value === "enter") onEnter();
     else if (value == "delete") onDelete();
     else onLetter(value);
@@ -53,7 +51,7 @@ export const LaddergramPost = (
   };
 
   const onEnter = async (): Promise<void> => {
-		if (currentStep.length != wordLength) return;
+    if (currentStep.length != wordLength) return;
     const wordToEnter = currentStep.join("");
     if (
       (wordLength == 3 && !words_3letter.includes(wordToEnter.toLowerCase())) ||
@@ -82,7 +80,7 @@ export const LaddergramPost = (
         if (steps.length == 0) {
           service.submitTried(postData.postId, userData.username);
         }
-				// if player got the target word
+        // if player got the target word
         if (wordToEnter == postData.targetWord) {
           setSolved(true);
           // save results to redis
@@ -91,24 +89,25 @@ export const LaddergramPost = (
             username: userData.username,
             result:
               `${postData.startWord} -> ` +
-              steps.map((step) => step.join("")).join(" -> ") + ` -> ${currentStep.join("")}`,
+              steps.map((step) => step.join("")).join(" -> ") +
+              ` -> ${currentStep.join("")}`,
             score: steps.length + 1,
           });
         }
-				setSteps([... steps, currentStep])
-				setCurrentStep([])
+        setSteps([...steps, currentStep]);
+        setCurrentStep([]);
       }
     }
   };
 
   const onDelete = (): void => {
     setErrorMessage("");
-		if (currentStep.length == 0) {
+    if (currentStep.length == 0) {
       if (steps.length == 0) return;
-			setCurrentStep(steps[steps.length-1])
+      setCurrentStep(steps[steps.length - 1]);
       setSteps(steps.slice(0, -1));
     } else {
-			setCurrentStep(currentStep.slice(0, -1));
+      setCurrentStep(currentStep.slice(0, -1));
     }
   };
 
@@ -124,7 +123,7 @@ export const LaddergramPost = (
   const pages: Record<string, JSX.Element> = {
     info: (
       <InfoPage
-				smallScreen={(context.dimensions?.width ?? 0) < 400}
+        screenWidth={context.dimensions?.width}
         onPress={() => {
           setPage("game");
         }}

@@ -1,41 +1,69 @@
 import { Devvit } from "@devvit/public-api";
+import { CustomButton } from "../../components/CustomButton.js";
+import { MenuButton } from "../../components/MenuButton.js";
 
 interface MenuPageProps {
+  screenWidth?: number;
 }
 
 export const MenuPage = (props: MenuPageProps): JSX.Element => {
-  const { } = props;
+  const { screenWidth = 400 } = props;
+  const titleLogoWidth = screenWidth < 400 ? screenWidth - 64 : 400;
 
   return (
-		<vstack alignment="center middle" padding="large" width="100%" height="100%">
+    <vstack
+      alignment="center middle"
+      padding="large"
+      width="100%"
+      height="100%"
+    >
+      <image
+        url="titleLogo.png"
+        description="Title logo"
+        imageWidth={titleLogoWidth}
+        imageHeight={titleLogoWidth / 7.6981}
+      />
+      <spacer height="26px" />
 
-		<spacer height="10px"/>
-		
-		<zstack alignment="center middle" width="100%" >
+      <zstack alignment="center middle" width="100%">
+        <vstack alignment="center middle" gap="large">
+          <MenuButton
+            label="Create Laddergram"
+            screenWidth={screenWidth}
+            onPress={() => {}}
+          />
+          <MenuButton
+            label="Leaderboard"
+            screenWidth={screenWidth}
+            onPress={() => {}}
+          />
+          <MenuButton
+            label="My Stats"
+            screenWidth={screenWidth}
+            onPress={() => {}}
+          />
+        </vstack>
 
-			<vstack alignment="center middle" gap="large" width="100%" maxWidth="400px">
-				<hstack padding="medium" backgroundColor="#d3964d " border="thick" borderColor="#3a322b" cornerRadius="small" width="100%" alignment="center middle">
-					<text color="#3a322b" size="xlarge" weight="bold"> + Create Laddergram</text>
-				</hstack>
-				<hstack padding="medium" backgroundColor="#d3964d " border="thick" borderColor="#3a322b" cornerRadius="small" width="100%" alignment="center middle">
-					<text color="#3a322b" size="xlarge" weight="bold">Leaderboard</text>
-				</hstack>
-				<hstack padding="medium" backgroundColor="#d3964d " border="thick" borderColor="#3a322b" cornerRadius="small" width="100%" alignment="center middle">
-					<text color="#3a322b" size="xlarge" weight="bold">My Stats</text>
-				</hstack>
-			</vstack>
-
-			<hstack>
-				<image imageHeight={542} imageWidth={47} url="rope.png" height="320px" description="rope"/>
-				<spacer width="200px"/>
-				<image imageHeight={542} imageWidth={47} url="rope.png" height="320px" description="rope"/>
-			</hstack>
-			
-			
-		</zstack>
-
-
-		
-	</vstack>
+        {screenWidth >= 400 ? (
+          <hstack>
+            <image
+              imageHeight={542}
+              imageWidth={47}
+              url="rope.png"
+              height="320px"
+              description="rope"
+            />
+            <spacer width="230px" />
+            <image
+              imageHeight={542}
+              imageWidth={47}
+              url="rope.png"
+              height="320px"
+              description="rope"
+            />
+          </hstack>
+        ) : null}
+      </zstack>
+    </vstack>
   );
 };

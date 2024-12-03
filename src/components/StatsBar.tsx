@@ -1,4 +1,5 @@
 import { Devvit } from "@devvit/public-api";
+import { MyText } from "./MyText.js";
 
 interface StatsBarProps {
   score: string;
@@ -8,32 +9,35 @@ interface StatsBarProps {
 
 export const StatsBar = (props: StatsBarProps): JSX.Element => {
   const { score, percentage, count } = props;
+  const height = "42px";
 
   return (
     <zstack>
       <hstack
-        backgroundColor="rgba(0, 72, 115)"
+        backgroundColor="rgba(78, 30, 21)"
         width={`${percentage}%`}
-        height="42px"
+        height={height}
         cornerRadius="small"
       ></hstack>
       <hstack
-        backgroundColor="rgba(0, 72, 115, 0.4)"
+        backgroundColor="rgba(78, 30, 21, 0.5)"
         width="100%"
-        height="42px"
+        height={height}
         cornerRadius="small"
         alignment="center middle"
       >
         <spacer width="12px" />
-        <text size="xlarge" color="white" weight="bold" grow>
-          {score == "" ? "" : `${score} steps`}
-        </text>
-        <text size="small" color="rgba(255, 255, 255, 0.6)" weight="bold" >
-          {count || ""}
-        </text>
-        <spacer width="16px" />
-        <text size="xlarge" weight="bold" color="white">{percentage ? `${percentage}%` : ""}</text>
-        <spacer width="12px" />
+        <hstack grow>
+          <MyText size={0.55} topMargin="5px">{score == "" ? "" : `${score} steps`}</MyText>
+        </hstack>
+        <hstack alignment="bottom">
+          <MyText size={0.4} fillColor="#c7ac8b">
+            {count ? `${count}` : ""}
+          </MyText>
+          <spacer width="16px" />
+          <MyText size={0.55}>{percentage ? `${percentage}%` : ""}</MyText>
+          <spacer width="12px" />
+        </hstack>
       </hstack>
     </zstack>
   );

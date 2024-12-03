@@ -3,8 +3,6 @@ import { Devvit, useAsync, useState } from "@devvit/public-api";
 import { Service } from "../service/service.js";
 
 import { LaddergramPost } from "./LaddergramPost/LaddergramPost.js";
-import { KeyboardButton } from "../components/KeyboardButton.js";
-import { LetterBlock } from "../components/LetterBlock.js";
 import {
   LaddergramPostData,
   PinnedPostData,
@@ -91,8 +89,7 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     ),
     pinned: (<PinnedPost userData={userData}/>),
   };
-
-
+	
   /*
    * Return the custom post unit
    */

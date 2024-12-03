@@ -5,39 +5,58 @@ interface CustomButtonProps {
   label: string;
   width: number;
   height: number;
+  textSize?: number;
+  overlay?: boolean;
   onPress: () => void | Promise<void>;
 }
 
+const dimensions: Record<string, { width: number; height: number }> = {
+  square: { width: 500, height: 500 },
+  small: { width: 500, height: 235 },
+  large: { width: 1024, height: 243 },
+};
+
 export const CustomButton = (props: CustomButtonProps): JSX.Element => {
-  const { label, width, height, onPress } = props;
+  const {
+    label,
+    width,
+    height,
+    textSize = 0.5,
+    overlay = false,
+    onPress,
+  } = props;
+  const ratio = width / height;
+  const size = ratio == 1 ? "square" : ratio > 3 ? "large" : "small";
 
   return (
     <zstack
       width={`${width}px`}
       height={`${height}px`}
       alignment="center middle"
-			onPress={onPress}
+      onPress={onPress}
     >
-      <hstack height="100%" width="100%">
-        <spacer width="1px" />
-        <vstack grow>
-          <spacer height="2px" />
-          <image
-            url="button.png"
-            description="logo"
-            imageHeight={235}
-            imageWidth={500}
-            grow
-            resizeMode="fill"
-          />
-          <spacer height="2px" />
-        </vstack>
-        <spacer width="2px" />
-      </hstack>
+      <image
+        url={`woodButton_${size}.png`}
+        description="wood button"
+        imageHeight={height}
+        imageWidth={width}
+        width="100%"
+        height="100%"
+      />
+      {overlay ? (
+        <hstack
+          width="100%"
+          height="100%"
+          backgroundColor="rgba(138, 97, 51, 0.5)"
+        ></hstack>
+      ) : null}
 
-      <MyText size={0.5} fillColor="#4e1e15" strokeColor="#e2a868">
+      <MyText size={textSize} fillColor="#4e1e15" strokeColor="#e2a868">
         {label}
       </MyText>
     </zstack>
   );
 };
+
+// imageHeight={dimensions[size].height}
+// imageWidth={dimensions[size].width}

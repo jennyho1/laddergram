@@ -1,5 +1,5 @@
 import { Devvit } from "@devvit/public-api";
-import { KeyboardButton } from "./KeyboardButton.js";
+import { CustomButton } from "./CustomButton.js";
 
 interface KeyboardButtonProps {
   errorMessage: string;
@@ -18,7 +18,7 @@ export const Keyboard = (props: KeyboardButtonProps): JSX.Element => {
           padding="xsmall"
           border="thin"
           borderColor="rgba(143, 0, 0)"
-					cornerRadius="small"
+          cornerRadius="small"
         >
           <text color="global-white" size="small">
             {errorMessage}
@@ -27,60 +27,73 @@ export const Keyboard = (props: KeyboardButtonProps): JSX.Element => {
       ) : (
         <spacer height="26px" />
       )}
-			<spacer height="6px" />
+      <spacer height="6px" />
 
       <hstack>
         {["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"].map((letter) => {
           return (
             <hstack>
-              <KeyboardButton
-                onPress={() => onKeyboardPress(letter)}
+              <CustomButton
                 label={letter}
+                width={22}
+                height={22}
+                textSize={0.4}
+                onPress={() => onKeyboardPress(letter)}
               />
               <spacer width="4px" />
             </hstack>
           );
         })}
       </hstack>
-			<spacer height="6px" />
+      <spacer height="6px" />
       <hstack>
         {["A", "S", "D", "F", "G", "H", "J", "K", "L"].map((letter) => {
           return (
             <hstack>
-              <KeyboardButton
-                onPress={() => onKeyboardPress(letter)}
+              <CustomButton
                 label={letter}
+                width={22}
+                height={22}
+                textSize={0.4}
+                onPress={() => onKeyboardPress(letter)}
               />
               <spacer width="4px" />
             </hstack>
           );
         })}
       </hstack>
-			<spacer height="6px" />
+      <spacer height="6px" />
       <hstack>
-        <KeyboardButton
-          onPress={() => onKeyboardPress("enter")}
+        <CustomButton
           label="Enter"
-          backgroundColor="#ad794b"
-          width="46px"
+          width={48}
+          height={22}
+          textSize={0.4}
+					overlay={true}
+          onPress={() => onKeyboardPress("enter")}
         />
         <spacer width="4px" />
         {["Z", "X", "C", "V", "B", "N", "M"].map((letter) => {
           return (
             <hstack>
-              <KeyboardButton
-                onPress={() => onKeyboardPress(letter)}
+              <CustomButton
                 label={letter}
+                width={22}
+                height={22}
+                textSize={0.4}
+                onPress={() => onKeyboardPress(letter)}
               />
               <spacer width="4px" />
             </hstack>
           );
         })}
-        <KeyboardButton
-          onPress={() => onKeyboardPress("delete")}
+				<CustomButton
           label="Delete"
-          backgroundColor="#ad794b"
-          width="56px"
+          width={52}
+          height={22}
+          textSize={0.4}
+					overlay={true}
+          onPress={() => onKeyboardPress("delete")}
         />
       </hstack>
     </vstack>

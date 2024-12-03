@@ -1,27 +1,36 @@
 import { Devvit } from "@devvit/public-api";
+import { MyText } from "./MyText.js";
 
 interface LetterBlockProps {
   label: string;
-	correct?: boolean;
-	highlight?: boolean;
+  correct?: boolean;
+  highlight?: boolean;
 }
 
 export const LetterBlock = (props: LetterBlockProps): JSX.Element => {
-  const { label, correct, highlight } = props;
-	const blockSize = "36px";
+  const { label, correct = false, highlight = false } = props;
+  const blockSize = 36;
 
   return (
-    <vstack
-      width={blockSize}
-      height={blockSize}
-      alignment="center middle"
-      backgroundColor={correct ? "#55a356" :"#c19b7a"}
-      border="thick"
-      borderColor={highlight ? "white" : "#3a322b"}
-    >
-      <text size="xxlarge" color="#3a322b" weight="bold">
+    <zstack width={`${blockSize}px`} height={`${blockSize}px`} alignment="center middle">
+      <image
+        url={
+          correct
+            ? "letterBlock_correct.png"
+            : highlight
+            ? "letterBlock_highlight.png"
+            : "woodButton_square.png"
+        }
+        description="logo"
+        imageHeight={500}
+        imageWidth={500}
+        width={`${blockSize}px`}
+        height={`${blockSize}px`}
+        resizeMode="fill"
+      />
+      <MyText size={0.7} fillColor="#4e1e15" strokeColor="#e2a868">
         {label}
-      </text>
-    </vstack>
+      </MyText>
+    </zstack>
   );
 };

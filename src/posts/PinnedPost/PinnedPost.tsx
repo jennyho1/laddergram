@@ -1,4 +1,4 @@
-import { Devvit, useState } from "@devvit/public-api";
+import { Context, Devvit, useState } from "@devvit/public-api";
 import { UserData } from "../../types/UserData.js";
 import { MenuPage } from "./MenuPage.js";
 
@@ -6,12 +6,15 @@ interface PinnedPostProps {
   userData: UserData;
 }
 
-export const PinnedPost = (props: PinnedPostProps): JSX.Element => {
+export const PinnedPost = (
+  props: PinnedPostProps,
+  context: Context
+): JSX.Element => {
   const { userData } = props;
   const [page, setPage] = useState("menu");
 
   const pages: Record<string, JSX.Element> = {
-    menu: <MenuPage />,
+    menu: <MenuPage screenWidth={context.dimensions?.width}/>,
     leaderboard: (
       <vstack alignment="center middle" width="100%" height="100%">
         <text color="global-white">Leaderboard</text>
