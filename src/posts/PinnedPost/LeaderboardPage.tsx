@@ -1,15 +1,6 @@
-import {
-  Comment,
-  Context,
-  Devvit,
-  useAsync,
-  useForm,
-} from "@devvit/public-api";
-import { CustomButton } from "../../components/CustomButton.js";
-import { MenuButton } from "../../components/MenuButton.js";
+import { Context, Devvit, useAsync } from "@devvit/public-api";
 import { Service } from "../../service/service.js";
 import { LoadingState } from "../../components/LoadingState.js";
-import { validateLaddergram } from "../../utils/validateLaddergram.js";
 import { UserData } from "../../types/UserData.js";
 import { SortedSetData } from "../../types/SortedSetData.js";
 import { MyText } from "../../components/MyText.js";
@@ -53,7 +44,7 @@ export const LeaderboardPage = (
 
   if (loading || data === null) return <LoadingState />;
 
-	const showUser = data.user.rank > rowCount && data.user.rank != -1;
+  const showUser = data.user.rank > rowCount && data.user.rank != -1;
   const userRow = showUser ? (
     <LeaderboardRows
       rank={data.user.rank + 1}
@@ -62,7 +53,7 @@ export const LeaderboardPage = (
     />
   ) : null;
 
-	const rowsToShow = rowCount - (showUser ? 1 : 0)
+  const rowsToShow = rowCount - (showUser ? 1 : 0);
 
   const leaderboardRows = data.leaderboard.map((row, index) => {
     if (index >= rowsToShow) {
@@ -82,7 +73,7 @@ export const LeaderboardPage = (
   }).map((_value, _index) => (
     <LeaderboardRows
       rank={data.leaderboard.length + 1 + _index}
-      username=""
+      username="---"
       score={0}
     />
   ));

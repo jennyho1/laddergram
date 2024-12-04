@@ -5,40 +5,63 @@ interface StatsBarProps {
   score: string;
   percentage: number;
   count: number;
+	barWidth: number;
+	star?: boolean;
 }
 
 export const StatsBar = (props: StatsBarProps): JSX.Element => {
-  const { score, percentage, count } = props;
-  const height = "42px";
+  const { score, percentage, count, barWidth, star = false } = props;
 
   return (
-    <zstack>
+    <hstack alignment="middle" width="100%">
       <hstack
-        backgroundColor="rgba(78, 30, 21)"
-        width={`${percentage}%`}
-        height={height}
-        cornerRadius="small"
-      ></hstack>
-      <hstack
-        backgroundColor="rgba(78, 30, 21, 0.5)"
-        width="100%"
-        height={height}
-        cornerRadius="small"
-        alignment="center middle"
+        width="58px"
+        height="30px"
+        backgroundColor="#e2a868"
+        alignment="middle center"
       >
-        <spacer width="12px" />
-        <hstack grow>
-          <MyText size={0.55} topMargin="5px">{score == "" ? "" : `${score} steps`}</MyText>
+				{star ? <text>⭐</text> : null}
+        <MyText size={0.5} fillColor="#4e1e15" strokeColor="#e2a868">
+          {score}
+        </MyText>
+				
+      </hstack>
+
+      <hstack width="2px" height="30px" backgroundColor="#c77f45"></hstack>
+
+      <vstack>
+        <hstack
+          width={`${barWidth + 2}px`}
+          height="2px"
+          backgroundColor="#ffe2bf"
+        ></hstack>
+        <hstack>
+          <hstack
+            width={`${barWidth}px`}
+            backgroundColor="#e2a868"
+            height="10px"
+          ></hstack>
+          <hstack width="2px" height="10px" backgroundColor="#c77f45"></hstack>
         </hstack>
-        <hstack alignment="bottom">
-          <MyText size={0.4} fillColor="#c7ac8b">
-            {count ? `${count}` : ""}
-          </MyText>
-          <spacer width="16px" />
-          <MyText size={0.55}>{percentage ? `${percentage}%` : ""}</MyText>
-          <spacer width="12px" />
+
+        <hstack
+          width={`${barWidth + 2}px`}
+          height="2px"
+          backgroundColor="#c77f45"
+        ></hstack>
+      </vstack>
+
+      <hstack alignment="middle">
+        <hstack alignment="center" width="34px">
+          <MyText size={0.3} fillColor="#c7ac8b">{`${count}`}</MyText>
+        </hstack>
+        <hstack alignment="end" width="46px">
+          <MyText size={0.5}>{`${percentage}%`}</MyText>
         </hstack>
       </hstack>
-    </zstack>
+
+      <spacer width="50px" />
+    </hstack>
   );
+
 };

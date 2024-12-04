@@ -3,7 +3,7 @@ import {
   RedditAPIClient,
   RedisClient,
   UIClient,
-	ZRangeOptions,
+  ZRangeOptions,
 } from "@devvit/public-api";
 
 import type {
@@ -100,7 +100,7 @@ export class Service {
   readonly #postSolvedKey = (postId: string): string => `solved:${postId}`;
   readonly #postTriesKey = (postId: string): string => `tries:${postId}`;
   readonly #postResultKey = (postId: string): string => `result:${postId}`;
-  readonly #postScoretKey = (postId: string): string => `score:${postId}`;
+  readonly #postScoreKey = (postId: string): string => `score:${postId}`;
 
   async submitSolvedResult(data: SolvedResultData): Promise<void> {
     const solvedKey = this.#postSolvedKey(data.postId);
@@ -115,16 +115,16 @@ export class Service {
     // save the user's result of the game
     await this.redis.hSet(resultKey, { [data.username]: data.result });
 
-		// add to their total score
-		let score = 0;
-		if (data.wordLength == 3) score = 2;
-		else if (data.wordLength == 4) score = 4;
-		else if (data.wordLength == 5) score = 8;
-		await this.redis.zIncrBy("scores", data.username, score);
+    // add to their total score
+    let score = 0;
+    if (data.wordLength == 3) score = 2;
+    else if (data.wordLength == 4) score = 4;
+    else if (data.wordLength == 5) score = 8;
+    await this.redis.zIncrBy("scores", data.username, score);
 
     // increment the number of people who got this score
     await this.redis.zIncrBy(
-      this.#postScoretKey(data.postId),
+      this.#postScoreKey(data.postId),
       data.score.toString(),
       1
     );
@@ -137,23 +137,51 @@ export class Service {
     });
   }
 
-  async getScoreDistribution(postId: string): Promise<PostResults> {
-    const data = await this.redis.zRange(this.#postScoretKey(postId), 0, 5, {
-      by: "rank",
-    });
+  async getPostResults(
+    postId: string,
+    rowCount: number = 10
+  ): Promise<PostResults> {
+    const data = await this.redis.zScan(this.#postScoreKey(postId), 0);
     const playerCount = await this.redis.zCard(this.#postTriesKey(postId));
     const solvedCount = await this.redis.zCard(this.#postSolvedKey(postId));
 
+    //parse and order the data for scores
+    const scores = data.members.sort((a, b) => Number(a.member) - Number(b.member))
+
+    const bestScore = scores.length>0 ? Number(scores[0].member) : 2;
+
+    // Define required members
+    const requiredMembers = Array.from({ length: rowCount-1 }, (_, index) =>
+      (bestScore + index).toString()
+    );
+
+		const scoreMapping = Object.fromEntries(scores.map((item) => [item.member, item.score]));
+
+    // Fill missing members and initialize their score to 0
+    const filledData = requiredMembers.map((member) => ({
+      member,
+      score: scoreMapping[member] || 0,
+    }));
+
+		const accumulatedNumber = bestScore + rowCount - 1;
+    // Accumulate the remaining members into "+"
+    const remaining = scores.filter((item) => Number(item.member) >= accumulatedNumber);
+    const accumulated = remaining.reduce(
+      (acc, item) => ({
+        member: `${accumulatedNumber}+`,
+        score: acc.score + item.score,
+      }),
+      { member: `${accumulatedNumber}+`, score: 0 } // Initial accumulator
+    );
+
+    // Combine the filled data and the accumulated data
+    const parsedScore = [...filledData, accumulated];
+
     const parsedData: PostResults = {
-      scores: {},
+      scores: parsedScore,
       playerCount: playerCount,
       solvedCount: solvedCount,
     };
-
-    data.forEach((value) => {
-      const { member: score, score: count } = value;
-      parsedData.scores[score] = count;
-    });
 
     return parsedData;
   }
@@ -254,12 +282,12 @@ export class Service {
   /************************************************************************
    * Total Score (this code snippet taken from pixelry)
    ************************************************************************/
-	async getTotalScores(maxLength: number = 10): Promise<SortedSetData[]> {
-    const options: ZRangeOptions = { reverse: true, by: 'rank' };
+  async getTotalScores(maxLength: number = 10): Promise<SortedSetData[]> {
+    const options: ZRangeOptions = { reverse: true, by: "rank" };
     return await this.redis.zRange("scores", 0, maxLength - 1, options);
   }
 
-	async getUserTotalScore(username: string | null): Promise<{
+  async getUserTotalScore(username: string | null): Promise<{
     rank: number;
     score: number;
   }> {
@@ -277,11 +305,9 @@ export class Service {
       };
     } catch (error) {
       if (error) {
-        console.error('Error fetching user score board entry', error);
+        console.error("Error fetching user score board entry", error);
       }
       return defaultValue;
     }
   }
-
-
 }

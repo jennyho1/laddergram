@@ -10,6 +10,7 @@ import { PostData } from "../../types/PostData.js";
 
 interface StatisticsPageProps {
   postData: PostData;
+  userData: UserData;
   onNavPress: (page: string) => void;
 }
 
@@ -17,14 +18,16 @@ export const StatisticsPage = (
   props: StatisticsPageProps,
   context: Context
 ): JSX.Element => {
-  const { postData, onNavPress } = props;
+  const { postData, userData, onNavPress } = props;
 
   const service = new Service(context);
-  const rowCount = 6;
+  const rowCount = 10;
+  // max width is screen width - padding - step number container - bar border - count - percentage
+  const maxWidth = (context.dimensions?.width || 288) - 64 - 62 - 2 - 34 - 46;
 
   const { data, loading } = useAsync<PostResults>(
     async () => {
-      return await service.getScoreDistribution(postData.postId);
+      return await service.getPostResults(postData.postId, rowCount);
     },
     {
       depends: [],
@@ -33,32 +36,69 @@ export const StatisticsPage = (
 
   if (loading || data === null) return <LoadingState />;
 
-  const topGuesses = Object.entries(data.scores)
-    .sort((a, b) => b[1] - a[1])
-    .map(([score, count]) => {
-      const percentage = Math.round((count / data.playerCount) * 100);
-      return <StatsBar score={score} percentage={percentage} count={count} />;
-    });
+  const highestCount = data.scores.reduce(
+    (max, item) => (item.score > max ? item.score : max),
+    0
+  );
 
-  // const topGuesses = [
-  //   <StatsBar score={"3"} percentage={56} count={44} />,
-  //   <StatsBar score={"4"} percentage={24} count={23} />,
-  //   <StatsBar score={"5"} percentage={11} count={7} />,
-  //   <StatsBar score={"6"} percentage={9} count={3} />,
+  const topGuessesRows = data.scores.map((item) => {
+    const width = (item.score / highestCount) * maxWidth;
+    const star =
+      userData.solved &&
+      (userData.score == parseInt(item.member) ||
+        (item.member.endsWith("+") && userData.score >= parseInt(item.member)));
+    return (
+      <StatsBar
+        score={item.member}
+        percentage={
+          data.solvedCount
+            ? Math.round((item.score / data.solvedCount) * 100)
+            : 0
+        }
+        count={item.score}
+        barWidth={width}
+        star={star}
+      />
+    );
+  });
+
+  // ---------------------------for testing purposes-----------------------
+  // const testData = [
+  //   { member: "3", score: 30 },
+  //   { member: "4", score: 47 },
+  //   { member: "5", score: 18 },
+  //   { member: "6", score: 15 },
+  //   { member: "7", score: 3 },
+  //   { member: "8", score: 5 },
+  //   { member: "10", score: 1 },
+  //   { member: "11", score: 3 },
+  //   { member: "12", score: 5 },
+  //   { member: "13", score: 1 },
   // ];
-
-  // Add placeholder rows if there are less guesses than rowCount
-  const placeholderRows = Array.from({
-    length: rowCount - topGuesses.length,
-  }).map((_value, _index) => <StatsBar score="" percentage={0} count={0} />);
+  // const topGuessesRows = testData.map((item) => {
+  //   const width = (item.score / 47) * maxWidth;
+  //   return (
+  //     <StatsBar
+  //       score={item.member}
+  //       percentage={Math.round((item.score / 119) * 100)}
+  //       count={item.score}
+  //       barWidth={width}
+  //     />
+  //   );
+  // });
+  // -----------------------------------------------------------------------
 
   return (
     <vstack width="100%" height="100%" padding="large">
       {/* nav */}
-      <hstack gap="medium" alignment="top center">
-        <vstack grow>
-          <MyText size={0.6}>Score Distribution</MyText>
-
+      <vstack>
+        <hstack alignment="middle center">
+          <vstack grow>
+            <MyText size={0.6}>Score Distribution</MyText>
+          </vstack>
+          <CustomIcon icon="close-fill" onPress={() => onNavPress("game")} />
+        </hstack>
+        <vstack>
           <hstack alignment="bottom">
             <text>👥</text>
             <MyText size={0.35} fillColor="#c7ac8b">{` ${
@@ -76,15 +116,42 @@ export const StatisticsPage = (
             fillColor="#c7ac8b"
           >{`Posted by u/${postData.authorUsername}`}</MyText>
         </vstack>
-        <CustomIcon icon="close-fill" onPress={() => onNavPress("game")} />
-      </hstack>
+      </vstack>
 
       <spacer height="16px" />
 
-      <vstack gap="small" grow>
-        {topGuesses}
-        {placeholderRows}
-      </vstack>
+      <hstack grow>
+        <vstack
+          backgroundColor="#ffe2bf"
+          width="2px"
+          height={`${topGuessesRows.length * 30 + 6 + 30}px`}
+        ></vstack>
+        <vstack>
+          <vstack backgroundColor="#ffe2bf" width="60px" height="2px"></vstack>
+          <hstack>
+            <hstack
+              width="58px"
+              height="30px"
+              backgroundColor="#e2a868"
+              alignment="middle center"
+            >
+              <MyText size={0.45} fillColor="#4e1e15" strokeColor="#e2a868">
+                Steps
+              </MyText>
+            </hstack>
+            <vstack
+              backgroundColor="#c77f45"
+              width="2px"
+              height="30px"
+            ></vstack>
+          </hstack>
+          <vstack backgroundColor="#c77f45" width="60px" height="2px"></vstack>
+          {topGuessesRows}
+          <vstack backgroundColor="#c77f45" width="60px" height="2px"></vstack>
+        </vstack>
+
+        {/* {placeholderRows} */}
+      </hstack>
     </vstack>
   );
 };

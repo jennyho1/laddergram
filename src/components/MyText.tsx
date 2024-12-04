@@ -55,6 +55,9 @@ export function MyText(props: MyTextProps): JSX.Element {
     else if (character == "q") yOffset = 11;
     else if (character == "y") yOffset = 11;
     else if (character == "Q") yOffset = 2;
+		else if (character == "-") yOffset = baseHeight/2;
+		else if (character == "+") yOffset = 8;
+
     if (glyph.height + yOffset > maxHeight) {
       maxHeight = glyph.height + yOffset;
     }

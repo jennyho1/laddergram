@@ -1,4 +1,4 @@
-import { Context, Devvit, useAsync, useState } from "@devvit/public-api";
+import { Context, Devvit, useState } from "@devvit/public-api";
 
 import { InfoPage } from "./InfoPage.js";
 import { GamePage } from "./GamePage.js";
@@ -24,7 +24,7 @@ export const LaddergramPost = (
   const service = new Service(context);
 
   const wordLength = postData.startWord.length;
-  const [page, setPage] = useState(userData.solved ? "game" : "game"); // ---------TODO change to "info"
+  const [page, setPage] = useState(userData.solved ? "statistics" : "game"); // ---------TODO change to "game" and "info"
   const [steps, setSteps] = useState(() => {
     if (userData.solved) {
       return userData.result
@@ -170,7 +170,7 @@ export const LaddergramPost = (
       />
     ),
     statistics: (
-      <StatisticsPage postData={postData} onNavPress={onNavPressHandler} />
+      <StatisticsPage postData={postData} userData={userData} onNavPress={onNavPressHandler} />
     ),
   };
 
