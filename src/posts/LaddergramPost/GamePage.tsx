@@ -43,22 +43,8 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
   const wordLength = postData.startWord.length;
   const blockSize = 36;
   const blockSpacing = "6px";
-  const stepsToShow = solved
-    ? 5
-    : scrollIndex < scrollNumber && scrollNumber > 0
-    ? 5
-    : 4;
-
-  // const scrollNumber = steps.length - stepsToShow;
-  // const [scrollIndex, setScrollIndex] = useState<number>(
-  //   scrollNumber <= 0 ? 0 : scrollNumber
-  // );
-
-  // const test = (value: string): void => {
-  // 	console.log(scrollIndex)
-  //   setScrollIndex(scrollNumber <= 0 ? 0 : scrollNumber);
-  // 	onKeyboardPress(value);
-  // };
+  const stepsToShow =
+    solved || (scrollIndex < scrollNumber && scrollNumber > 0) ? 5 : 4;
 
   return (
     <vstack width="100%" height="100%" padding="large">

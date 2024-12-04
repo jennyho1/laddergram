@@ -5,15 +5,15 @@ import { Service } from "../../service/service.js";
 import { LoadingState } from "../../components/LoadingState.js";
 import { validateLaddergram } from "../../utils/validateLaddergram.js";
 import { UserData } from "../../types/UserData.js";
-import { newPostPinnedComment } from "../../jobs/newPostPinnedComment.js";
 interface MenuPageProps {
   screenWidth?: number;
-	userData: UserData
+	userData: UserData,
+	onNavPress: (page: string) => void;
 }
 
 export const MenuPage = (props: MenuPageProps,
   context: Context): JSX.Element => {
-  const { screenWidth = 400, userData } = props;
+  const { screenWidth = 400, userData, onNavPress } = props;
 	const service = new Service(context);
   const titleLogoWidth = screenWidth < 400 ? screenWidth - 64 : 400;
 
@@ -135,7 +135,7 @@ export const MenuPage = (props: MenuPageProps,
           <MenuButton
             label="Leaderboard"
             screenWidth={screenWidth}
-            onPress={() => {}}
+            onPress={() => {onNavPress("leaderboard")}}
           />
           <MenuButton
             label="My Stats"

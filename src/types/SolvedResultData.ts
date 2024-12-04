@@ -3,4 +3,5 @@ export type SolvedResultData = {
   username: string;
 	result: string;
 	score: number;
+	wordLength: number;
 };

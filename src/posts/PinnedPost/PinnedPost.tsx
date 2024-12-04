@@ -1,6 +1,7 @@
 import { Context, Devvit, useState } from "@devvit/public-api";
 import { UserData } from "../../types/UserData.js";
 import { MenuPage } from "./MenuPage.js";
+import { LeaderboardPage } from "./LeaderboardPage.js";
 
 interface PinnedPostProps {
   userData: UserData;
@@ -11,15 +12,21 @@ export const PinnedPost = (
   context: Context
 ): JSX.Element => {
   const { userData } = props;
-  const [page, setPage] = useState("menu");
-
+  const [page, setPage] = useState("leaderboard");
 
   const pages: Record<string, JSX.Element> = {
-    menu: <MenuPage screenWidth={context.dimensions?.width} userData={userData}/>,
+    menu: (
+      <MenuPage screenWidth={context.dimensions?.width} userData={userData} onNavPress={(page) => {
+				setPage(page);
+			}}/>
+    ),
     leaderboard: (
-      <vstack alignment="center middle" width="100%" height="100%">
-        <text color="global-white">Leaderboard</text>
-      </vstack>
+      <LeaderboardPage
+        userData={userData}
+        onClose={() => {
+          setPage("menu");
+        }}
+      ></LeaderboardPage>
     ),
     myStats: (
       <vstack alignment="center middle" width="100%" height="100%">

@@ -3,6 +3,7 @@ import {
   RedditAPIClient,
   RedisClient,
   UIClient,
+	ZRangeOptions,
 } from "@devvit/public-api";
 
 import type {
@@ -40,7 +41,7 @@ export class Service {
    ************************************************************************/
   readonly #postDataKey = (postId: string): string => `post:${postId}`;
 
-	async getPostType(postId: string): Promise<string> {
+  async getPostType(postId: string): Promise<string> {
     const key = this.#postDataKey(postId);
     const postType = await this.redis.hGet(key, "postType");
     return postType ?? "laddergram";
@@ -113,6 +114,13 @@ export class Service {
 
     // save the user's result of the game
     await this.redis.hSet(resultKey, { [data.username]: data.result });
+
+		// add to their total score
+		let score = 0;
+		if (data.wordLength == 3) score = 2;
+		else if (data.wordLength == 4) score = 4;
+		else if (data.wordLength == 5) score = 8;
+		await this.redis.zIncrBy("scores", data.username, score);
 
     // increment the number of people who got this score
     await this.redis.zIncrBy(
@@ -242,4 +250,38 @@ export class Service {
       message: "",
     };
   }
+
+  /************************************************************************
+   * Total Score (this code snippet taken from pixelry)
+   ************************************************************************/
+	async getTotalScores(maxLength: number = 10): Promise<SortedSetData[]> {
+    const options: ZRangeOptions = { reverse: true, by: 'rank' };
+    return await this.redis.zRange("scores", 0, maxLength - 1, options);
+  }
+
+	async getUserTotalScore(username: string | null): Promise<{
+    rank: number;
+    score: number;
+  }> {
+    const defaultValue = { rank: -1, score: 0 };
+    if (!username) return defaultValue;
+    try {
+      const [rank, score] = await Promise.all([
+        this.redis.zRank("score", username),
+        // TODO: Remove .zScore when .zRank supports the WITHSCORE option
+        this.redis.zScore("score", username),
+      ]);
+      return {
+        rank: rank === undefined ? -1 : rank,
+        score: score === undefined ? 0 : score,
+      };
+    } catch (error) {
+      if (error) {
+        console.error('Error fetching user score board entry', error);
+      }
+      return defaultValue;
+    }
+  }
+
+
 }

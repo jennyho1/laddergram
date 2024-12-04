@@ -110,6 +110,7 @@ export const LaddergramPost = (
               steps.map((step) => step.join("")).join(" -> ") +
               ` -> ${currentStep.join("")}`,
             score: steps.length + 1,
+						wordLength
           });
         } else {
           setScrollNumber((n) => n + 1);

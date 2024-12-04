@@ -33,19 +33,19 @@ export const StatisticsPage = (
 
   if (loading || data === null) return <LoadingState />;
 
-  // const topGuesses = Object.entries(data.scores)
-  //   .sort((a, b) => b[1] - a[1])
-  //   .map(([score, count]) => {
-  //     const percentage = Math.round((count / data.playerCount) * 100);
-  //     return <StatsBar score={score} percentage={percentage} count={count} />;
-  //   });
+  const topGuesses = Object.entries(data.scores)
+    .sort((a, b) => b[1] - a[1])
+    .map(([score, count]) => {
+      const percentage = Math.round((count / data.playerCount) * 100);
+      return <StatsBar score={score} percentage={percentage} count={count} />;
+    });
 
-  const topGuesses = [
-    <StatsBar score={"3"} percentage={56} count={44} />,
-    <StatsBar score={"4"} percentage={24} count={23} />,
-    <StatsBar score={"5"} percentage={11} count={7} />,
-    <StatsBar score={"6"} percentage={9} count={3} />,
-  ];
+  // const topGuesses = [
+  //   <StatsBar score={"3"} percentage={56} count={44} />,
+  //   <StatsBar score={"4"} percentage={24} count={23} />,
+  //   <StatsBar score={"5"} percentage={11} count={7} />,
+  //   <StatsBar score={"6"} percentage={9} count={3} />,
+  // ];
 
   // Add placeholder rows if there are less guesses than rowCount
   const placeholderRows = Array.from({
