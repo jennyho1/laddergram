@@ -1,4 +1,4 @@
-import { Devvit } from "@devvit/public-api";
+import { Devvit, useState } from "@devvit/public-api";
 
 import { LetterBlock } from "../../components/LetterBlock.js";
 import { Keyboard } from "../../components/Keyboard.js";
@@ -6,6 +6,8 @@ import { PostData } from "../../types/PostData.js";
 import { UserData } from "../../types/UserData.js";
 import { MyText } from "../../components/MyText.js";
 import { CustomIcon } from "../../components/CustomIcon.js";
+import { ArrowButton } from "../../components/ArrowButton.js";
+import { CustomButton } from "../../components/CustomButton.js";
 
 interface GamePageProps {
   postData: PostData;
@@ -16,6 +18,10 @@ interface GamePageProps {
   onKeyboardPress: (value: string) => void;
   onSubmitComment: () => void | Promise<void>;
   currentStep: string[];
+  scrollNumber: number;
+  scrollIndex: number;
+  onScroll: (direction: string) => void;
+  // stepsToShow: number;
 }
 
 export const GamePage = (props: GamePageProps): JSX.Element => {
@@ -28,15 +34,31 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
     onKeyboardPress,
     onSubmitComment,
     currentStep,
+    scrollNumber,
+    scrollIndex,
+    onScroll,
+    // stepsToShow,
   } = props;
+
   const wordLength = postData.startWord.length;
-  const blockSize = "36px";
+  const blockSize = 36;
   const blockSpacing = "6px";
-  const stepsToShow = solved ? 5 : 4;
-  const result =
-    postData.startWord.toUpperCase() +
-    " -> " +
-    steps.map((step) => step.join("")).join(" -> ");
+  const stepsToShow = solved
+    ? 5
+    : scrollIndex < scrollNumber && scrollNumber > 0
+    ? 5
+    : 4;
+
+  // const scrollNumber = steps.length - stepsToShow;
+  // const [scrollIndex, setScrollIndex] = useState<number>(
+  //   scrollNumber <= 0 ? 0 : scrollNumber
+  // );
+
+  // const test = (value: string): void => {
+  // 	console.log(scrollIndex)
+  //   setScrollIndex(scrollNumber <= 0 ? 0 : scrollNumber);
+  // 	onKeyboardPress(value);
+  // };
 
   return (
     <vstack width="100%" height="100%" padding="large">
@@ -45,56 +67,31 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
         <hstack grow>
           <MyText size={0.6}>{`Step Counter: ${steps.length}`}</MyText>
         </hstack>
-				<CustomIcon icon="info-fill" onPress={() => onNavPress("info")}/>
-				<CustomIcon icon="topic-business-fill" onPress={() => onNavPress("statistics")}/>
+        <CustomIcon icon="info-fill" onPress={() => onNavPress("info")} />
+        <CustomIcon
+          icon="topic-business-fill"
+          onPress={() => onNavPress("statistics")}
+        />
       </hstack>
 
       <spacer height="8px" />
 
       {/* word boxes */}
-      <vstack alignment="center middle" grow>
-        {/* starting word */}
-        <hstack gap="small">
-          {postData.startWord.split("").map((char) => (
-						<LetterBlock label={char}/>
-          ))}
-        </hstack>
-        <spacer height={blockSpacing} />
+      <hstack gap="small" alignment="center middle" grow>
+        {scrollNumber <= 0 ? null : <spacer width="24px" />}
 
-        {/* word boxes: user guesses*/}
-        <vstack>
-          {/* compressed */}
-          {steps.length > stepsToShow ? (
-            <vstack>
-              <hstack gap="small">
-                {Array.from({ length: wordLength }, () => (
-                  <vstack>
-                    <hstack
-                      height="1px"
-                      width={blockSize}
-                      backgroundColor="#c19b7a"
-                    ></hstack>
-                    <spacer height="3px" />
-                    <hstack
-                      height="1px"
-                      width={blockSize}
-                      backgroundColor="#c19b7a"
-                    ></hstack>
-                    <spacer height="3px" />
-                    <hstack
-                      height="1px"
-                      width={blockSize}
-                      backgroundColor="#c19b7a"
-                    ></hstack>
-                  </vstack>
-                ))}
-              </hstack>
-              <spacer height={blockSpacing} />
-            </vstack>
-          ) : null}
+        <vstack alignment="center middle">
+          {/* starting word */}
+          <hstack gap="small">
+            {postData.startWord.split("").map((char) => (
+              <LetterBlock label={char} />
+            ))}
+          </hstack>
+          <spacer height={blockSpacing} />
 
-          {steps.slice(-stepsToShow).map((step) => (
-            <vstack>
+          {/* word boxes: user guesses*/}
+          <vstack>
+            {steps.slice(scrollIndex, scrollIndex + stepsToShow).map((step) => (
               <hstack gap="small">
                 {step.map((letter, index) => {
                   if (letter == postData.targetWord.charAt(index)) {
@@ -103,37 +100,56 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
                   return <LetterBlock label={letter} />;
                 })}
               </hstack>
-            </vstack>
-          ))}
+            ))}
 
-          {/* current word */}
+            {/* current word */}
+            {scrollIndex < scrollNumber && scrollNumber > 0 ? null : (
+              <hstack gap="small">
+                {solved
+                  ? null
+                  : currentStep.map((char) => <LetterBlock label={char} />)}
+                {solved
+                  ? null
+                  : Array.from(
+                      { length: wordLength - currentStep.length },
+                      (_, index) => (
+                        <LetterBlock label="" highlight={index == 0} />
+                      )
+                    )}
+              </hstack>
+            )}
+          </vstack>
+
+          <spacer height={blockSpacing} />
+          {/* target word */}
           <hstack gap="small">
-            {solved
-              ? null
-              : currentStep.map((char) => <LetterBlock label={char} />)}
-            {solved
-              ? null
-              : Array.from(
-                  { length: wordLength - currentStep.length },
-                  (_, index) => <LetterBlock label="" highlight={index == 0} />
-                )}
+            {postData.targetWord.split("").map((char, index) => {
+              if (steps.length > 0) {
+                const lastWord = steps[steps.length - 1];
+                if (lastWord[index] == char) {
+                  return <LetterBlock label={char} correct={true} />;
+                }
+              }
+              return <LetterBlock label={char} />;
+            })}
           </hstack>
         </vstack>
-
-        <spacer height={blockSpacing} />
-        {/* target word */}
-        <hstack gap="small">
-          {postData.targetWord.split("").map((char, index) => {
-            if (steps.length > 0) {
-              const lastWord = steps[steps.length - 1];
-              if (lastWord[index] == char) {
-                return <LetterBlock label={char} correct={true} />;
-              }
-            }
-            return <LetterBlock label={char} />;
-          })}
-        </hstack>
-      </vstack>
+        {scrollNumber <= 0 ? null : (
+          <vstack alignment="middle center">
+            <ArrowButton
+              direction="up"
+              onPress={() => onScroll("up")}
+            ></ArrowButton>
+            <spacer height={`${blockSize / 2 - 2}px`} />
+            <MyText size={0.3}>{`${scrollIndex}/${scrollNumber}`}</MyText>
+            <spacer height={`${blockSize / 2 - 2}px`} />
+            <ArrowButton
+              direction="down"
+              onPress={() => onScroll("down")}
+            ></ArrowButton>
+          </vstack>
+        )}
+      </hstack>
 
       <spacer height="8px" />
 
@@ -142,31 +158,27 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
         <vstack alignment="center middle" gap="small">
           <hstack
             alignment="top center"
-            backgroundColor="rgba(0, 138, 1, 0.7)"
+            backgroundColor="rgba(0, 79, 1, 0.7)"
             padding="xsmall"
             border="thin"
-            borderColor="rgba(0, 138, 1)"
+            borderColor="rgba(0, 79, 1)"
             cornerRadius="small"
           >
-            <text color="global-white" size="small">
-              ✨ You solved this in {steps.length} steps! ✨
-            </text>
+            <text>✨</text>
+            <spacer width="3px" />
+            <MyText
+              size={0.4}
+							topMargin="4px"
+            >{`You solved this in ${steps.length} steps!`}</MyText>
+            <spacer width="3px" />
+            <text>✨</text>
           </hstack>
-
-          <text
-            size="small"
-            color="global-white"
-            maxHeight="40px"
-            wrap
-            overflow="ellipsis"
-            alignment="center middle"
-            weight="bold"
-          >
-            {result}
-          </text>
-          <button size="small" onPress={onSubmitComment}>
-            Leave a comment
-          </button>
+          <CustomButton
+            label="Leave a comment"
+            width={180}
+            height={40}
+            onPress={onSubmitComment}
+          />
         </vstack>
       ) : (
         <Keyboard

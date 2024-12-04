@@ -6,8 +6,10 @@ import { UserData } from "../../types/UserData.js";
 import { PostResults } from "../../types/PostResults.js";
 import { CustomIcon } from "../../components/CustomIcon.js";
 import { MyText } from "../../components/MyText.js";
+import { PostData } from "../../types/PostData.js";
 
 interface StatisticsPageProps {
+  postData: PostData;
   onNavPress: (page: string) => void;
 }
 
@@ -15,14 +17,14 @@ export const StatisticsPage = (
   props: StatisticsPageProps,
   context: Context
 ): JSX.Element => {
-  const { onNavPress } = props;
+  const { postData, onNavPress } = props;
 
   const service = new Service(context);
   const rowCount = 6;
 
   const { data, loading } = useAsync<PostResults>(
     async () => {
-      return await service.getScoreDistribution(context.postId!);
+      return await service.getScoreDistribution(postData.postId);
     },
     {
       depends: [],
@@ -56,18 +58,23 @@ export const StatisticsPage = (
       <hstack gap="medium" alignment="top center">
         <vstack grow>
           <MyText size={0.6}>Score Distribution</MyText>
-					<spacer height="5px"/>
+
           <hstack alignment="bottom">
             <text>👥</text>
             <MyText size={0.35} fillColor="#c7ac8b">{` ${
               data.playerCount
             } player${data.playerCount > 1 ? "s" : ""} tried`}</MyText>
-						<spacer width="8px"/>
+            <spacer width="8px" />
             <text color="#c7ac8b">• 🏆</text>
             <MyText size={0.35} fillColor="#c7ac8b">{` ${
               data.solvedCount
             } player${data.solvedCount > 1 ? "s" : ""} solved`}</MyText>
           </hstack>
+          <spacer height="4px" />
+          <MyText
+            size={0.35}
+            fillColor="#c7ac8b"
+          >{`Posted by u/${postData.authorUsername}`}</MyText>
         </vstack>
         <CustomIcon icon="close-fill" onPress={() => onNavPress("game")} />
       </hstack>

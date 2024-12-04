@@ -38,10 +38,11 @@ export const CustomButton = (props: CustomButtonProps): JSX.Element => {
       <image
         url={`woodButton_${size}.png`}
         description="wood button"
-        imageHeight={height}
-        imageWidth={width}
-        width="100%"
-        height="100%"
+        imageHeight={dimensions[size].height}
+        imageWidth={dimensions[size].width}
+        width={`${width}px`}
+        height={`${height}px`}
+				resizeMode="fill"
       />
       {overlay ? (
         <hstack

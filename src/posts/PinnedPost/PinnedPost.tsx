@@ -13,8 +13,9 @@ export const PinnedPost = (
   const { userData } = props;
   const [page, setPage] = useState("menu");
 
+
   const pages: Record<string, JSX.Element> = {
-    menu: <MenuPage screenWidth={context.dimensions?.width}/>,
+    menu: <MenuPage screenWidth={context.dimensions?.width} userData={userData}/>,
     leaderboard: (
       <vstack alignment="center middle" width="100%" height="100%">
         <text color="global-white">Leaderboard</text>

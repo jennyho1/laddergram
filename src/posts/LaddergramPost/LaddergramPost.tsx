@@ -38,8 +38,25 @@ export const LaddergramPost = (
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [solved, setSolved] = useState<boolean>(userData.solved);
 
+  // const [stepsToShow, setStepsToShow] = useState<number>(solved ? 5 : 4);
+  const [scrollNumber, setScrollNumber] = useState<number>(
+    steps.length - (solved ? 5 : 4)
+  );
+  const [scrollIndex, setScrollIndex] = useState<number>(
+    scrollNumber <= 0 ? 0 : scrollNumber
+  );
+
+  const onScrollHandler = (direction: string) => {
+    if (direction == "up") {
+      if (scrollIndex > 0) setScrollIndex((i) => i - 1);
+    } else if (direction == "down") {
+      if (scrollIndex < scrollNumber) setScrollIndex((i) => i + 1);
+    }
+  };
+
   const onKeyboardPressHandler = (value: string): void => {
     if (solved) return;
+    setScrollIndex(scrollNumber <= 0 ? 0 : scrollNumber);
     if (value === "enter") onEnter();
     else if (value == "delete") onDelete();
     else onLetter(value);
@@ -80,9 +97,10 @@ export const LaddergramPost = (
         if (steps.length == 0) {
           service.submitTried(postData.postId, userData.username);
         }
-        // if player got the target word
+        // PLAYER SOLVED IT
         if (wordToEnter == postData.targetWord) {
           setSolved(true);
+          // setStepsToShow(5);
           // save results to redis
           service.submitSolvedResult({
             postId: postData.postId,
@@ -93,6 +111,9 @@ export const LaddergramPost = (
               ` -> ${currentStep.join("")}`,
             score: steps.length + 1,
           });
+        } else {
+          setScrollNumber((n) => n + 1);
+          setScrollIndex(scrollNumber < 0 ? 0 : scrollNumber + 1);
         }
         setSteps([...steps, currentStep]);
         setCurrentStep([]);
@@ -106,6 +127,7 @@ export const LaddergramPost = (
       if (steps.length == 0) return;
       setCurrentStep(steps[steps.length - 1]);
       setSteps(steps.slice(0, -1));
+      setScrollNumber((n) => n - 1);
     } else {
       setCurrentStep(currentStep.slice(0, -1));
     }
@@ -124,6 +146,7 @@ export const LaddergramPost = (
     info: (
       <InfoPage
         screenWidth={context.dimensions?.width}
+        authorUsername={postData.authorUsername}
         onPress={() => {
           setPage("game");
         }}
@@ -139,9 +162,15 @@ export const LaddergramPost = (
         onKeyboardPress={onKeyboardPressHandler}
         onSubmitComment={onSubmitComment}
         currentStep={currentStep}
+        scrollIndex={scrollIndex}
+        scrollNumber={scrollNumber}
+        onScroll={onScrollHandler}
+        // stepsToShow={stepsToShow}
       />
     ),
-    statistics: <StatisticsPage onNavPress={onNavPressHandler} />,
+    statistics: (
+      <StatisticsPage postData={postData} onNavPress={onNavPressHandler} />
+    ),
   };
 
   /*

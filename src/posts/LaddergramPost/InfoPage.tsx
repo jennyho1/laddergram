@@ -4,13 +4,14 @@ import { CustomButton } from "../../components/CustomButton.js";
 
 interface InfoPageProps {
   screenWidth?: number;
+  authorUsername: string;
   onPress: () => void | Promise<void>;
 }
 
 export const InfoPage = (props: InfoPageProps): JSX.Element => {
-  const { onPress, screenWidth = 400 } = props;
+  const { onPress, screenWidth = 400, authorUsername } = props;
 
-	const titleLogoWidth = screenWidth < 400 ? screenWidth-64 : 400;
+  const titleLogoWidth = screenWidth < 400 ? screenWidth - 64 : 400;
 
   return (
     <vstack
@@ -32,7 +33,7 @@ export const InfoPage = (props: InfoPageProps): JSX.Element => {
         url="titleLogo.png"
         description="Title logo"
         imageWidth={titleLogoWidth}
-        imageHeight={titleLogoWidth/7.6981}
+        imageHeight={titleLogoWidth / 7.6981}
       />
       <vstack alignment="center middle">
         {screenWidth < 400 ? (
@@ -66,12 +67,21 @@ export const InfoPage = (props: InfoPageProps): JSX.Element => {
           </vstack>
         )}
       </vstack>
-      <CustomButton
-        label="Solve laddergram"
-        width={180}
-        height={50}
-        onPress={onPress}
-      />
+      <vstack alignment="center middle">
+        {authorUsername != "laddergram" ? (
+          <MyText size={0.35} fillColor="#c7ac8b" bottomMargin="3px">
+            {`Posted by u/${authorUsername}`}
+          </MyText>
+        ) : null}
+
+        <CustomButton
+          label="Solve laddergram"
+          width={180}
+          height={40}
+          onPress={onPress}
+        />
+      </vstack>
+
       {/* <button appearance="success" onPress={onPress}>
         Solve laddergram
       </button> */}
