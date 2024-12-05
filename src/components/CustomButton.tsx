@@ -52,12 +52,9 @@ export const CustomButton = (props: CustomButtonProps): JSX.Element => {
         ></hstack>
       ) : null}
 
-      <MyText size={textSize} fillColor="#4e1e15" strokeColor="#e2a868">
+      <MyText size={textSize}>
         {label}
       </MyText>
     </zstack>
   );
 };
-
-// imageHeight={dimensions[size].height}
-// imageWidth={dimensions[size].width}

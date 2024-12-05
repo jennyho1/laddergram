@@ -6,6 +6,7 @@ import { SortedSetData } from "../../types/SortedSetData.js";
 import { MyText } from "../../components/MyText.js";
 import { CustomIcon } from "../../components/CustomIcon.js";
 import { LeaderboardRows } from "../../components/LeaderboardRow.js";
+import { Container } from "../../components/Container.js";
 interface LeaderboardPageProps {
   userData: UserData;
   onClose: () => void;
@@ -45,9 +46,10 @@ export const LeaderboardPage = (
   if (loading || data === null) return <LoadingState />;
 
   const showUser = data.user.rank > rowCount && data.user.rank != -1;
+
   const userRow = showUser ? (
     <LeaderboardRows
-      rank={data.user.rank + 1}
+      rank={data.user.rank}
       username={userData.username}
       score={data.user.score}
     />
@@ -83,42 +85,17 @@ export const LeaderboardPage = (
       {/* nav */}
       <hstack gap="medium" alignment="middle center">
         <vstack grow>
-          <MyText size={0.6}>Leaderboard</MyText>
+          <MyText size={0.6} mode="light">Leaderboard</MyText>
         </vstack>
         <CustomIcon icon="close-fill" onPress={onClose} />
       </hstack>
       <spacer height="16px" />
       <vstack gap="medium" grow>
-        <vstack border="thick" borderColor="#4e1e15">
-          <vstack border="thick" borderColor="#4e1e15">
-            <vstack border="thick" borderColor="#ffe2bf">
-              <vstack
-                border="thin"
-                borderColor="#ffe2bf"
-                backgroundColor="#e2a868"
-              >
-                {leaderboardRows}
-                {placeholderRows}
-              </vstack>
-            </vstack>
-          </vstack>
-        </vstack>
-
-        {showUser ? (
-          <vstack border="thick" borderColor="#4e1e15">
-            <vstack border="thick" borderColor="#4e1e15">
-              <vstack border="thick" borderColor="#ffe2bf">
-                <vstack
-                  border="thin"
-                  borderColor="#ffe2bf"
-                  backgroundColor="#e2a868"
-                >
-                  {userRow}
-                </vstack>
-              </vstack>
-            </vstack>
-          </vstack>
-        ) : null}
+        <Container>
+          {leaderboardRows}
+          {placeholderRows}
+        </Container>
+        {showUser ? <Container>{userRow}</Container> : null}
       </vstack>
     </vstack>
   );

@@ -294,13 +294,14 @@ export class Service {
     const defaultValue = { rank: -1, score: 0 };
     if (!username) return defaultValue;
     try {
-      const [rank, score] = await Promise.all([
-        this.redis.zRank("score", username),
+      const [rank, score, total] = await Promise.all([
+        this.redis.zRank("scores", username),
         // TODO: Remove .zScore when .zRank supports the WITHSCORE option
-        this.redis.zScore("score", username),
+        this.redis.zScore("scores", username),
+				this.redis.zCard("scores"),
       ]);
       return {
-        rank: rank === undefined ? -1 : rank,
+        rank: rank === undefined ? -1 : total - rank,
         score: score === undefined ? 0 : score,
       };
     } catch (error) {

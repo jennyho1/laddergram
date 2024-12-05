@@ -94,26 +94,26 @@ export const StatisticsPage = (
       <vstack>
         <hstack alignment="middle center">
           <vstack grow>
-            <MyText size={0.6}>Score Distribution</MyText>
+            <MyText size={0.6} mode="light">Score Distribution</MyText>
           </vstack>
           <CustomIcon icon="close-fill" onPress={() => onNavPress("game")} />
         </hstack>
         <vstack>
           <hstack alignment="bottom">
             <text>👥</text>
-            <MyText size={0.35} fillColor="#c7ac8b">{` ${
+            <MyText size={0.35} mode="med">{` ${
               data.playerCount
             } player${data.playerCount > 1 ? "s" : ""} tried`}</MyText>
             <spacer width="8px" />
             <text color="#c7ac8b">• 🏆</text>
-            <MyText size={0.35} fillColor="#c7ac8b">{` ${
+            <MyText size={0.35} mode="med">{` ${
               data.solvedCount
             } player${data.solvedCount > 1 ? "s" : ""} solved`}</MyText>
           </hstack>
           <spacer height="4px" />
           <MyText
             size={0.35}
-            fillColor="#c7ac8b"
+            mode="med"
           >{`Posted by u/${postData.authorUsername}`}</MyText>
         </vstack>
       </vstack>
@@ -135,7 +135,7 @@ export const StatisticsPage = (
               backgroundColor="#e2a868"
               alignment="middle center"
             >
-              <MyText size={0.45} fillColor="#4e1e15" strokeColor="#e2a868">
+              <MyText size={0.45}>
                 Steps
               </MyText>
             </hstack>

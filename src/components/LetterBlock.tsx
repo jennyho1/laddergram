@@ -28,7 +28,7 @@ export const LetterBlock = (props: LetterBlockProps): JSX.Element => {
         height={`${blockSize}px`}
         resizeMode="fill"
       />
-      <MyText size={0.7} fillColor="#4e1e15" strokeColor="#e2a868">
+      <MyText size={0.7}>
         {label}
       </MyText>
     </zstack>

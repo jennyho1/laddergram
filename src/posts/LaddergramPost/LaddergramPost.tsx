@@ -24,7 +24,7 @@ export const LaddergramPost = (
   const service = new Service(context);
 
   const wordLength = postData.startWord.length;
-  const [page, setPage] = useState(userData.solved ? "statistics" : "game"); // ---------TODO change to "game" and "info"
+  const [page, setPage] = useState(userData.solved ? "game" : "info");
   const [steps, setSteps] = useState(() => {
     if (userData.solved) {
       return userData.result

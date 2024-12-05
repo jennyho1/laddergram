@@ -21,7 +21,7 @@ export const StatsBar = (props: StatsBarProps): JSX.Element => {
         alignment="middle center"
       >
 				{star ? <text>⭐</text> : null}
-        <MyText size={0.5} fillColor="#4e1e15" strokeColor="#e2a868">
+        <MyText size={0.5}>
           {score}
         </MyText>
 				
@@ -53,10 +53,10 @@ export const StatsBar = (props: StatsBarProps): JSX.Element => {
 
       <hstack alignment="middle">
         <hstack alignment="center" width="34px">
-          <MyText size={0.3} fillColor="#c7ac8b">{`${count}`}</MyText>
+          <MyText size={0.3} mode="med">{`${count}`}</MyText>
         </hstack>
         <hstack alignment="end" width="46px">
-          <MyText size={0.5}>{`${percentage}%`}</MyText>
+          <MyText size={0.5} mode="light">{`${percentage}%`}</MyText>
         </hstack>
       </hstack>
 

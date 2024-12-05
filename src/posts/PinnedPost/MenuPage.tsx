@@ -138,9 +138,9 @@ export const MenuPage = (props: MenuPageProps,
             onPress={() => {onNavPress("leaderboard")}}
           />
           <MenuButton
-            label="My Stats"
+            label="How To play"
             screenWidth={screenWidth}
-            onPress={() => {}}
+            onPress={() => {onNavPress("howtoplay")}}
           />
         </vstack>
 

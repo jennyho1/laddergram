@@ -7,6 +7,7 @@ import { LoadingState } from "./components/LoadingState.js";
 import words_3letter from "./data/words_3letter.json";
 import words_4letter from "./data/words_4letter.json";
 import words_5letter from "./data/words_5letter.json";
+import { scheduleDailyChallengeForm } from "./forms/scheduleDailyChallengeForm.js";
 
 /*
  * Enable plugins
@@ -15,6 +16,14 @@ Devvit.configure({
   redditAPI: true,
   redis: true,
 });
+
+
+/*
+ * Jobs
+ */
+// import './jobs/dailyChallenge.js';
+
+
 
 /*
  * Define custome post type
@@ -87,7 +96,7 @@ const newGameForm = Devvit.createForm(
       // update database with new post
       service.saveLaddergramPost({
         postId: post.id,
-				postType: "laddergram",
+        postType: "laddergram",
         startWord: startWord.toUpperCase(),
         targetWord: targetWord.toUpperCase(),
         authorUsername: post.authorName,
@@ -129,6 +138,32 @@ Devvit.addMenuItem({
     await post.sticky();
     await service.savePinnedPost(post.id);
     context.ui.navigateTo(post);
+  },
+});
+
+Devvit.addMenuItem({
+  label: "[Laddergram] Schedule daily challenges",
+  location: "subreddit",
+  forUserType: "moderator",
+  onPress: async (_event, context) => {
+    context.ui.showForm(scheduleDailyChallengeForm);
+  },
+});
+
+Devvit.addMenuItem({
+  label: "[Laddergram] Stop daily challenges",
+  location: "subreddit",
+  forUserType: "moderator",
+  onPress: async (_event, context) => {
+    // get the jobId from redis
+    const jobId = await context.redis.get("dailyChallengeJobId");
+    if (!jobId) {
+      context.ui.showToast("No daily challenges are currently running.");
+      return;
+    }
+    // stop the job and remove jobId from redis
+    await context.scheduler.cancelJob(jobId);
+    await context.redis.del("dailyChallengeJobId");
   },
 });
 

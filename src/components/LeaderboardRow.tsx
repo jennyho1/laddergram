@@ -29,12 +29,12 @@ export const LeaderboardRows = (props: LeaderboardRowsProps): JSX.Element => {
 			padding="small"
     >
       <hstack grow>
-        <MyText size={0.45} fillColor="#4e1e15" strokeColor="#e2a868" topMargin="0px">
+        <MyText size={0.45}>
           {`${rank}. ${username}`}
         </MyText>
       </hstack>
       <hstack>
-        <MyText size={0.45} fillColor="#4e1e15" strokeColor="#e2a868" topMargin="2px">
+        <MyText size={0.45} topMargin="2px">
           {`${score}`}
         </MyText>
         <spacer width="3px" />

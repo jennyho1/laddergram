@@ -1,5 +1,4 @@
 import { Devvit } from "@devvit/public-api";
-import { MyText } from "./MyText.js";
 
 interface ArrowButtonProps {
   direction: string;

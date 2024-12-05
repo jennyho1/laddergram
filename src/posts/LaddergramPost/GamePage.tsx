@@ -51,7 +51,7 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
       {/* nav */}
       <hstack gap="medium" alignment="middle center">
         <hstack grow>
-          <MyText size={0.6}>{`Step Counter: ${steps.length}`}</MyText>
+          <MyText size={0.6} mode="light">{`Step Counter: ${steps.length}`}</MyText>
         </hstack>
         <CustomIcon icon="info-fill" onPress={() => onNavPress("info")} />
         <CustomIcon
@@ -127,7 +127,7 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
               onPress={() => onScroll("up")}
             ></ArrowButton>
             <spacer height={`${blockSize / 2 - 2}px`} />
-            <MyText size={0.3}>{`${scrollIndex}/${scrollNumber}`}</MyText>
+            <MyText size={0.3} mode="light">{`${scrollIndex}/${scrollNumber}`}</MyText>
             <spacer height={`${blockSize / 2 - 2}px`} />
             <ArrowButton
               direction="down"
@@ -155,6 +155,7 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
             <MyText
               size={0.4}
 							topMargin="4px"
+							mode="light"
             >{`You solved this in ${steps.length} steps!`}</MyText>
             <spacer width="3px" />
             <text>✨</text>
