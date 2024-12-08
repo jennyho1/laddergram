@@ -1,20 +1,22 @@
-import { Comment, Context, Devvit, useForm  } from "@devvit/public-api";
-import { CustomButton } from "../../components/CustomButton.js";
+import { Comment, Context, Devvit, useForm } from "@devvit/public-api";
 import { MenuButton } from "../../components/MenuButton.js";
 import { Service } from "../../service/service.js";
 import { LoadingState } from "../../components/LoadingState.js";
 import { validateLaddergram } from "../../utils/validateLaddergram.js";
 import { UserData } from "../../types/UserData.js";
+import { findOptimalSolution } from "../../utils/findOptimalSolution.js";
 interface MenuPageProps {
   screenWidth?: number;
-	userData: UserData,
-	onNavPress: (page: string) => void;
+  userData: UserData;
+  onNavPress: (page: string) => void;
 }
 
-export const MenuPage = (props: MenuPageProps,
-  context: Context): JSX.Element => {
+export const MenuPage = (
+  props: MenuPageProps,
+  context: Context
+): JSX.Element => {
   const { screenWidth = 400, userData, onNavPress } = props;
-	const service = new Service(context);
+  const service = new Service(context);
   const titleLogoWidth = screenWidth < 400 ? screenWidth - 64 : 400;
 
   const newGameForm = useForm(
@@ -39,15 +41,19 @@ export const MenuPage = (props: MenuPageProps,
       cancelLabel: "Cancel",
     },
     async (values) => {
-			// onSubmit handler
       const startWord = values.startword.toLowerCase();
       const targetWord = values.targetword.toLowerCase();
-			
+
       const status = validateLaddergram(startWord, targetWord);
       if (!status.success) {
         context.ui.showToast(status.message);
         return;
       }
+			const optimal = findOptimalSolution(startWord, targetWord);
+			if (optimal === -1) {
+				context.ui.showToast("This puzzle is unsolvable.");
+        return;
+			}
 
       // create laddergram post
       const subreddit = await context.reddit.getCurrentSubreddit();
@@ -64,21 +70,23 @@ export const MenuPage = (props: MenuPageProps,
         startWord: startWord.toUpperCase(),
         targetWord: targetWord.toUpperCase(),
         authorUsername: userData.username,
+				optimalSteps: optimal
       });
 
-			let comment: Comment | undefined;
-    try {
-      comment = await context.reddit.submitComment({
-        id: post.id,
-        text: `Laddergram is a word ladder puzzle game built on [Reddit's developer platform](https://developers.reddit.com).\nYou start with a word and change one letter at a time to create a new word with each step. Try to reach the target word in the fewest steps possible.\n\n🍀Good luck!🍀`,
-      });
-    } catch (error) {
-      if (error) {
-        console.error("Failed to submit sticky comment:", error);
+			// make a sticky comment
+      let comment: Comment | undefined;
+      try {
+        comment = await context.reddit.submitComment({
+          id: post.id,
+          text: `Laddergram is a word ladder puzzle game built on [Reddit's developer platform](https://developers.reddit.com).\nYou start with a word and change one letter at a time to create a new word with each step. Try to reach the target word in the fewest steps possible.\n\n🍀Good luck!🍀`,
+        });
+      } catch (error) {
+        if (error) {
+          console.error("Failed to submit sticky comment:", error);
+        }
+        comment = undefined;
       }
-      comment = undefined;
-    }
-			if (comment) await comment.distinguish(true);
+      if (comment) await comment.distinguish(true);
 
       context.ui.showToast({
         text: "Success: Created laddergram post!",
@@ -87,7 +95,6 @@ export const MenuPage = (props: MenuPageProps,
       context.ui.navigateTo(post);
     }
   );
-
 
   return (
     <vstack
@@ -105,7 +112,7 @@ export const MenuPage = (props: MenuPageProps,
       <spacer height="26px" />
 
       <zstack alignment="center middle" width="100%">
-			{screenWidth >= 400 ? (
+        {screenWidth >= 400 ? (
           <hstack>
             <image
               imageHeight={542}
@@ -129,22 +136,24 @@ export const MenuPage = (props: MenuPageProps,
             label="Create Laddergram"
             screenWidth={screenWidth}
             onPress={() => {
-							context.ui.showForm(newGameForm);
-						}}
+              context.ui.showForm(newGameForm);
+            }}
           />
           <MenuButton
             label="Leaderboard"
             screenWidth={screenWidth}
-            onPress={() => {onNavPress("leaderboard")}}
+            onPress={() => {
+              onNavPress("leaderboard");
+            }}
           />
           <MenuButton
-            label="How To play"
+            label="How To Play"
             screenWidth={screenWidth}
-            onPress={() => {onNavPress("howtoplay")}}
+            onPress={() => {
+              onNavPress("howtoplay");
+            }}
           />
         </vstack>
-
-        
       </zstack>
     </vstack>
   );

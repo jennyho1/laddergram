@@ -10,7 +10,6 @@ import {
 } from "../types/PostData.js";
 import { UserData } from "../types/UserData.js";
 import { LoadingState } from "../components/LoadingState.js";
-import { Alert } from "../components/Alert.js";
 import { PinnedPost } from "./PinnedPost/PinnedPost.js";
 
 /*

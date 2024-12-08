@@ -59,6 +59,7 @@ export class Service {
       startWord: data.startWord,
       targetWord: data.targetWord,
       authorUsername: data.authorUsername,
+			optimalSteps: data.optimalSteps.toString(),
       date: Date.now().toString(),
     });
   }
@@ -71,6 +72,7 @@ export class Service {
       startWord: postData.startWord,
       targetWord: postData.targetWord,
       authorUsername: postData.authorUsername,
+			optimalSteps: parseInt(postData.optimalSteps) || 0
     };
   }
 
@@ -139,6 +141,7 @@ export class Service {
 
   async getPostResults(
     postId: string,
+		optimal: number,
     rowCount: number = 10
   ): Promise<PostResults> {
     const data = await this.redis.zScan(this.#postScoreKey(postId), 0);
@@ -148,7 +151,7 @@ export class Service {
     //parse and order the data for scores
     const scores = data.members.sort((a, b) => Number(a.member) - Number(b.member))
 
-    const bestScore = scores.length>0 ? Number(scores[0].member) : 2;
+    const bestScore = scores.length>0 ? Number(scores[0].member) : optimal;
 
     // Define required members
     const requiredMembers = Array.from({ length: rowCount-1 }, (_, index) =>

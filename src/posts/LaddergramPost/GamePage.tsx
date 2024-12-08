@@ -1,9 +1,8 @@
-import { Devvit, useState } from "@devvit/public-api";
+import { Devvit } from "@devvit/public-api";
 
 import { LetterBlock } from "../../components/LetterBlock.js";
 import { Keyboard } from "../../components/Keyboard.js";
 import { PostData } from "../../types/PostData.js";
-import { UserData } from "../../types/UserData.js";
 import { MyText } from "../../components/MyText.js";
 import { CustomIcon } from "../../components/CustomIcon.js";
 import { ArrowButton } from "../../components/ArrowButton.js";
@@ -21,7 +20,6 @@ interface GamePageProps {
   scrollNumber: number;
   scrollIndex: number;
   onScroll: (direction: string) => void;
-  // stepsToShow: number;
 }
 
 export const GamePage = (props: GamePageProps): JSX.Element => {
@@ -37,7 +35,6 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
     scrollNumber,
     scrollIndex,
     onScroll,
-    // stepsToShow,
   } = props;
 
   const wordLength = postData.startWord.length;

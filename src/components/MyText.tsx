@@ -120,10 +120,11 @@ export function MyText(props: MyTextProps): JSX.Element {
 
   // -----------------------------------------------------------------------------------------
 
-  // if the last line is empty, remove it
+  // if the last line is empty, remove extra line gap
   if (lineWidth == 0) {
     finalHeight = prevLineHeights - lineGap;
   } else {
+		// else add the height of the last line
 		finalHeight = prevLineHeights + currLineHeight;
 	}
 

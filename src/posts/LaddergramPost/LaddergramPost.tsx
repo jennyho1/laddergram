@@ -10,6 +10,7 @@ import { UserData } from "../../types/UserData.js";
 import words_3letter from "../../data/words_3letter.json";
 import words_4letter from "../../data/words_4letter.json";
 import words_5letter from "../../data/words_5letter.json";
+import { countLetterDifferences } from "../../utils/countLetterDifferences.js";
 
 interface LaddergramPostProps {
   userData: UserData;
@@ -37,8 +38,6 @@ export const LaddergramPost = (
   const [currentStep, setCurrentStep] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [solved, setSolved] = useState<boolean>(userData.solved);
-
-  // const [stepsToShow, setStepsToShow] = useState<number>(solved ? 5 : 4);
   const [scrollNumber, setScrollNumber] = useState<number>(
     steps.length - (solved ? 5 : 4)
   );
@@ -78,16 +77,12 @@ export const LaddergramPost = (
       setErrorMessage(`${wordToEnter} is not in the word list`);
     } else {
       // checking if only 1 character was changed
-      let changes = 0;
       const prevWord =
         steps.length == 0
           ? postData.startWord
           : steps[steps.length - 1].join("");
-      for (let i = 0; i < wordLength; i++) {
-        if (prevWord[i] !== wordToEnter[i]) {
-          changes++;
-        }
-      }
+					
+			const changes = countLetterDifferences(prevWord, wordToEnter)
       if (changes == 0) {
         setErrorMessage("Did not change any characters");
       } else if (changes > 1) {
@@ -100,7 +95,6 @@ export const LaddergramPost = (
         // PLAYER SOLVED IT
         if (wordToEnter == postData.targetWord) {
           setSolved(true);
-          // setStepsToShow(5);
           // save results to redis
           service.submitSolvedResult({
             postId: postData.postId,
@@ -166,7 +160,6 @@ export const LaddergramPost = (
         scrollIndex={scrollIndex}
         scrollNumber={scrollNumber}
         onScroll={onScrollHandler}
-        // stepsToShow={stepsToShow}
       />
     ),
     statistics: (
@@ -174,9 +167,6 @@ export const LaddergramPost = (
     ),
   };
 
-  /*
-   * Return the custom post unit
-   */
   return (
     pages[page] || (
       <vstack alignment="center middle" width="100%" height="100%">

@@ -3,6 +3,7 @@ export type PostData = {
   startWord: string;
 	targetWord: string;
 	authorUsername: string;
+	optimalSteps: number;
 };
 
 
@@ -13,6 +14,7 @@ export type LaddergramPostData = {
   startWord: string;
 	targetWord: string;
 	authorUsername: string;
+	optimalSteps: number;
 }
 
 export type PinnedPostData = {

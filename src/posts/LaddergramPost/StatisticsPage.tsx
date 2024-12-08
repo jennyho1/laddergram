@@ -27,7 +27,7 @@ export const StatisticsPage = (
 
   const { data, loading } = useAsync<PostResults>(
     async () => {
-      return await service.getPostResults(postData.postId, rowCount);
+      return await service.getPostResults(postData.postId, postData.optimalSteps, rowCount);
     },
     {
       depends: [],
@@ -128,7 +128,7 @@ export const StatisticsPage = (
         ></vstack>
         <vstack>
           <vstack backgroundColor="#ffe2bf" width="60px" height="2px"></vstack>
-          <hstack>
+          <hstack alignment="middle">
             <hstack
               width="58px"
               height="30px"
@@ -144,13 +144,13 @@ export const StatisticsPage = (
               width="2px"
               height="30px"
             ></vstack>
+						<spacer width="15px"/>
+						<MyText mode="med">{`Optimal: ${postData.optimalSteps} steps`}</MyText>
           </hstack>
           <vstack backgroundColor="#c77f45" width="60px" height="2px"></vstack>
           {topGuessesRows}
           <vstack backgroundColor="#c77f45" width="60px" height="2px"></vstack>
         </vstack>
-
-        {/* {placeholderRows} */}
       </hstack>
     </vstack>
   );
