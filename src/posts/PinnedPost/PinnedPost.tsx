@@ -5,21 +5,21 @@ import { LeaderboardPage } from "./LeaderboardPage.js";
 import { HowToPlayPage } from "./HowToPlayPage.js";
 
 interface PinnedPostProps {
-  userData: UserData;
+  username: string;
 }
 
 export const PinnedPost = (
   props: PinnedPostProps,
   context: Context
 ): JSX.Element => {
-  const { userData } = props;
+  const { username } = props;
   const [page, setPage] = useState("menu");
 
   const pages: Record<string, JSX.Element> = {
     menu: (
       <MenuPage
         screenWidth={context.dimensions?.width}
-        userData={userData}
+        username={username}
         onNavPress={(page) => {
           setPage(page);
         }}
@@ -27,7 +27,7 @@ export const PinnedPost = (
     ),
     leaderboard: (
       <LeaderboardPage
-        userData={userData}
+        username={username}
         onClose={() => {
           setPage("menu");
         }}

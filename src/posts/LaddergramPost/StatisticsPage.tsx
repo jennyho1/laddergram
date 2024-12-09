@@ -2,7 +2,7 @@ import { Context, Devvit, useAsync } from "@devvit/public-api";
 import { Service } from "../../service/service.js";
 import { LoadingState } from "../../components/LoadingState.js";
 import { StatsBar } from "../../components/StatsBar.js";
-import { UserData } from "../../types/UserData.js";
+import { UserPostData } from "../../types/UserData.js";
 import { PostResults } from "../../types/PostResults.js";
 import { CustomIcon } from "../../components/CustomIcon.js";
 import { MyText } from "../../components/MyText.js";
@@ -10,7 +10,7 @@ import { PostData } from "../../types/PostData.js";
 
 interface StatisticsPageProps {
   postData: PostData;
-  userData: UserData;
+  userPostData: UserPostData;
   onNavPress: (page: string) => void;
 }
 
@@ -18,7 +18,7 @@ export const StatisticsPage = (
   props: StatisticsPageProps,
   context: Context
 ): JSX.Element => {
-  const { postData, userData, onNavPress } = props;
+  const { postData, userPostData, onNavPress } = props;
 
   const service = new Service(context);
   const rowCount = 10;
@@ -44,9 +44,9 @@ export const StatisticsPage = (
   const topGuessesRows = data.scores.map((item) => {
     const width = (item.score / highestCount) * maxWidth;
     const star =
-      userData.solved &&
-      (userData.score == parseInt(item.member) ||
-        (item.member.endsWith("+") && userData.score >= parseInt(item.member)));
+      userPostData.solved &&
+      (userPostData.score == parseInt(item.member) ||
+        (item.member.endsWith("+") && userPostData.score >= parseInt(item.member)));
     return (
       <StatsBar
         score={item.member}

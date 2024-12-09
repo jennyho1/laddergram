@@ -1,6 +1,6 @@
 import { Devvit } from "@devvit/public-api";
+import { addDailyChallengeWords } from "../utils/addDailyChallengeWords.js";
 
-import { Service } from "../service/service.js";
 
 export const scheduleDailyChallengeForm = Devvit.createForm(
   {
@@ -9,7 +9,7 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
         type: "number",
         name: "hour",
         label:
-          "At what hour (0-23) would you like the daily challenge to be posted?",
+          "At what hour (0-23) UTC would you like the daily challenge to be posted?",
         required: true,
       },
     ],
@@ -28,6 +28,10 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
       return;
     }
 
+		// await addDailyChallengeWords(context)
+		// const record = await context.redis.hGetAll('dailyChallenges');
+		// console.log(record)
+
 		// schedule job 
 		const newJobId = await context.scheduler.runJob({
       name: 'DAILY_CHALLENGE_JOB',
@@ -36,5 +40,7 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
 
 		// save job to redis
 		await context.redis.set('dailyChallengeJobId', newJobId);
+
+		context.ui.showToast("Daily challenges are successfully running.")
 	}
 );

@@ -1,5 +1,5 @@
 // Learn more at developers.reddit.com/docs
-import { Devvit, useState } from "@devvit/public-api";
+import { Comment, Devvit, useState } from "@devvit/public-api";
 import { Router } from "./posts/Router.js";
 import { Service } from "./service/service.js";
 import { LoadingState } from "./components/LoadingState.js";
@@ -19,7 +19,7 @@ Devvit.configure({
 /*
  * Jobs
  */
-// import './jobs/dailyChallenge.js';
+import './jobs/dailyChallenge.js';
 
 /*
  * Define custom post type
@@ -55,37 +55,57 @@ const newGameForm = Devvit.createForm(
     const service = new Service(context);
     const startWord = event.values.startword.toLowerCase();
     const targetWord = event.values.targetword.toLowerCase();
-		const optimalSolution = findOptimalSolution(startWord, targetWord);
-		console.log(`${startWord} to ${targetWord}: ${optimalSolution} steps`)
+	
+		const status = validateLaddergram(startWord, targetWord);
+		if (!status.success) {
+			context.ui.showToast(status.message);
+			return;
+		}
+		const optimal = findOptimalSolution(startWord, targetWord);
+		if (optimal === -1) {
+			context.ui.showToast("This puzzle is unsolvable.");
+			return;
+		}
 
-    // const status = validateLaddergram(startWord, targetWord);
-    // if (!status.success) {
-    //   context.ui.showToast(status.message);
-    //   return;
-    // }
+		// create laddergram post
+		const subreddit = await context.reddit.getCurrentSubreddit();
+		const post = await context.reddit.submitPost({
+			title: "Can you solve this laddergram?",
+			subredditName: subreddit.name,
+			preview: <LoadingState />,
+		});
 
-    // // create laddergram post
-    // const subreddit = await context.reddit.getCurrentSubreddit();
-    // const post = await context.reddit.submitPost({
-    //   title: "Can you solve this laddergram?",
-    //   subredditName: subreddit.name,
-    //   preview: <LoadingState />,
-    // });
 
-    // // update database with new post
-    // service.saveLaddergramPost({
-    //   postId: post.id,
-    //   postType: "laddergram",
-    //   startWord: startWord.toUpperCase(),
-    //   targetWord: targetWord.toUpperCase(),
-    //   authorUsername: post.authorName,
-    // });
+		// update database with new post
+		service.saveLaddergramPost({
+			postId: post.id,
+			postType: "laddergram",
+			startWord: startWord.toUpperCase(),
+			targetWord: targetWord.toUpperCase(),
+			authorUsername: post.authorName,
+			optimalSteps: optimal
+		});
 
-    // context.ui.showToast({
-    //   text: "Sucess: Created laddergram post!",
-    //   appearance: "success",
-    // });
-    // context.ui.navigateTo(post);
+		// make a sticky comment
+		let comment: Comment | undefined;
+		try {
+			comment = await context.reddit.submitComment({
+				id: post.id,
+				text: `Laddergram is a word ladder puzzle game built on [Reddit's developer platform](https://developers.reddit.com).\nYou start with a word and change one letter at a time to create a new word with each step. Try to reach the target word in the fewest steps possible.\n\n🍀Good luck!🍀`,
+			});
+		} catch (error) {
+			if (error) {
+				console.error("Failed to submit sticky comment:", error);
+			}
+			comment = undefined;
+		}
+		if (comment) await comment.distinguish(true);
+
+		context.ui.showToast({
+			text: "Success: Created laddergram post!",
+			appearance: "success",
+		});
+		context.ui.navigateTo(post);
   }
 );
 
@@ -142,6 +162,7 @@ Devvit.addMenuItem({
     // stop the job and remove jobId from redis
     await context.scheduler.cancelJob(jobId);
     await context.redis.del("dailyChallengeJobId");
+		context.ui.showToast("Daily challenges stopped.");
   },
 });
 

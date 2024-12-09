@@ -12,10 +12,11 @@ import type {
   PostData,
 } from "../types/PostData.js";
 import type { SolvedResultData } from "../types/SolvedResultData.js";
-import { UserData } from "../types/UserData.js";
+import { UserData, UserPostData } from "../types/UserData.js";
 import { Status } from "../types/Status.js";
 import { SortedSetData } from "../types/SortedSetData.js";
 import { PostResults } from "../types/PostResults.js";
+import { isToday } from "../utils/isToday.js";
 
 // Service that handles the backbone logic for the application
 // This service is responsible for:
@@ -37,10 +38,59 @@ export class Service {
   }
 
   /************************************************************************
-   * Post Data
+   * All keys
    ************************************************************************/
+
+  /**Hashmap for storing the post data of postId
+   * - postId (string)
+   * - postType (string) = "laddergram" or "pinned" or "daily"
+   * - startWord (string)
+   * - targetWord (string)
+   * - authorUsername (string)
+   * - optimalSteps: (number)
+   * - date: (string)
+   */
   readonly #postDataKey = (postId: string): string => `post:${postId}`;
 
+  /**Sorted set for tracking the score of each user for a given post
+   * - member: username (string)
+   * - score: score (0 if player tried but didn't solve, else 0< that represents the user's score)
+   */
+  readonly #postScoreKey = (postId: string): string => `score:${postId}`;
+
+  /**Hashmap for storing the player's answer result for a post
+   * - [username] = stringified result (like "HOT -> DOT -> DOG	")
+   */
+  readonly #postResultKey = (postId: string): string => `result:${postId}`;
+
+  /**Sorted set for tracking the number of people who scored the same on a given post
+   * - member: score
+   * - score: # of people who got that score
+   */
+  readonly #postScoreStatsKey = (postId: string): string =>
+    `scoreStats:${postId}`;
+
+  /**Sorted set for tracking the total points that a user has
+   * - member: username
+   * - score: total points
+   */
+  readonly #totalPointsKey = (): string => `points`;
+
+  /**Hashmap for storing user information
+   * - username (string)
+   * - postCreated (number)
+   * - lastPostCreatedDate (string)
+   */
+  readonly #userDataKey = (username: string) => `users:${username}`;
+
+  /**Hashmap to keep track of who commented on the given post
+   * - [username] = "1"
+   */
+  readonly #commentKey = (postId: string) => `comments:${postId}`;
+
+  /************************************************************************
+   * Post Data
+   ************************************************************************/
   async getPostType(postId: string): Promise<string> {
     const key = this.#postDataKey(postId);
     const postType = await this.redis.hGet(key, "postType");
@@ -52,14 +102,13 @@ export class Service {
    */
   async saveLaddergramPost(data: LaddergramPostData): Promise<void> {
     const key = this.#postDataKey(data.postId);
-    // Save post object
     await this.redis.hSet(key, {
       postId: data.postId,
       postType: data.postType,
       startWord: data.startWord,
       targetWord: data.targetWord,
       authorUsername: data.authorUsername,
-			optimalSteps: data.optimalSteps.toString(),
+      optimalSteps: data.optimalSteps.toString(),
       date: Date.now().toString(),
     });
   }
@@ -68,11 +117,11 @@ export class Service {
     const postData = await this.redis.hGetAll(this.#postDataKey(postId));
     return {
       postId: postId,
-      postType: "laddergram",
+      postType: postData.postType,
       startWord: postData.startWord,
       targetWord: postData.targetWord,
       authorUsername: postData.authorUsername,
-			optimalSteps: parseInt(postData.optimalSteps) || 0
+      optimalSteps: parseInt(postData.optimalSteps) || 0,
     };
   }
 
@@ -96,44 +145,38 @@ export class Service {
     };
   }
 
-  /*
-   * Solved posts: username and result
-   */
-  readonly #postSolvedKey = (postId: string): string => `solved:${postId}`;
-  readonly #postTriesKey = (postId: string): string => `tries:${postId}`;
-  readonly #postResultKey = (postId: string): string => `result:${postId}`;
-  readonly #postScoreKey = (postId: string): string => `score:${postId}`;
-
+  /************************************************************************
+   * Post Score, Results, and Stats
+   ************************************************************************/
   async submitSolvedResult(data: SolvedResultData): Promise<void> {
-    const solvedKey = this.#postSolvedKey(data.postId);
-    const resultKey = this.#postResultKey(data.postId);
-
-    // Save solved result object
-    await this.redis.zAdd(solvedKey, {
+    // Save user's score
+    await this.redis.zAdd(this.#postScoreKey(data.postId), {
       member: data.username,
       score: data.score,
     });
 
-    // save the user's result of the game
-    await this.redis.hSet(resultKey, { [data.username]: data.result });
+    // Save the user's result of the game
+    await this.redis.hSet(this.#postResultKey(data.postId), {
+      [data.username]: data.result,
+    });
 
-    // add to their total score
-    let score = 0;
-    if (data.wordLength == 3) score = 2;
-    else if (data.wordLength == 4) score = 4;
-    else if (data.wordLength == 5) score = 8;
-    await this.redis.zIncrBy("scores", data.username, score);
+    // add to their total points
+    let points = 0;
+    if (data.wordLength == 3) points = 2;
+    else if (data.wordLength == 4) points = 4;
+    else if (data.wordLength == 5) points = 8;
+    await this.redis.zIncrBy(this.#totalPointsKey(), data.username, points);
 
     // increment the number of people who got this score
     await this.redis.zIncrBy(
-      this.#postScoreKey(data.postId),
+      this.#postScoreStatsKey(data.postId),
       data.score.toString(),
       1
     );
   }
 
   async submitTried(postId: string, username: string): Promise<void> {
-    await this.redis.zAdd(this.#postTriesKey(postId), {
+    await this.redis.zAdd(this.#postScoreKey(postId), {
       member: username,
       score: 0,
     });
@@ -141,24 +184,35 @@ export class Service {
 
   async getPostResults(
     postId: string,
-		optimal: number,
+    optimal: number,
     rowCount: number = 10
   ): Promise<PostResults> {
-    const data = await this.redis.zScan(this.#postScoreKey(postId), 0);
-    const playerCount = await this.redis.zCard(this.#postTriesKey(postId));
-    const solvedCount = await this.redis.zCard(this.#postSolvedKey(postId));
+    const scoreKey = this.#postScoreKey(postId);
+    const scoreStatsKey = this.#postScoreStatsKey(postId);
 
-    //parse and order the data for scores
-    const scores = data.members.sort((a, b) => Number(a.member) - Number(b.member))
+    const statsData = await this.redis.zScan(scoreStatsKey, 0);
+    const playerCount = await this.redis.zCard(scoreKey);
+    const failedCount = (
+      await this.redis.zRange(scoreKey, 0, 0, {
+        by: "score",
+      })
+    ).length;
+    const solvedCount = playerCount - failedCount;
 
-    const bestScore = scores.length>0 ? Number(scores[0].member) : optimal;
-
-    // Define required members
-    const requiredMembers = Array.from({ length: rowCount-1 }, (_, index) =>
-      (bestScore + index).toString()
+    // parse and order the data for scores stats
+    const scores = statsData.members.sort(
+      (a, b) => Number(a.member) - Number(b.member)
     );
 
-		const scoreMapping = Object.fromEntries(scores.map((item) => [item.member, item.score]));
+    const bestScore = scores.length > 0 ? Number(scores[0].member) : optimal;
+
+    // Define required members
+    const requiredMembers = Array.from({ length: rowCount - 1 }, (_, index) =>
+      (bestScore + index).toString()
+    );
+    const scoreMapping = Object.fromEntries(
+      scores.map((item) => [item.member, item.score])
+    );
 
     // Fill missing members and initialize their score to 0
     const filledData = requiredMembers.map((member) => ({
@@ -166,9 +220,11 @@ export class Service {
       score: scoreMapping[member] || 0,
     }));
 
-		const accumulatedNumber = bestScore + rowCount - 1;
+    const accumulatedNumber = bestScore + rowCount - 1;
     // Accumulate the remaining members into "+"
-    const remaining = scores.filter((item) => Number(item.member) >= accumulatedNumber);
+    const remaining = scores.filter(
+      (item) => Number(item.member) >= accumulatedNumber
+    );
     const accumulated = remaining.reduce(
       (acc, item) => ({
         member: `${accumulatedNumber}+`,
@@ -179,7 +235,6 @@ export class Service {
 
     // Combine the filled data and the accumulated data
     const parsedScore = [...filledData, accumulated];
-
     const parsedData: PostResults = {
       scores: parsedScore,
       playerCount: playerCount,
@@ -189,45 +244,62 @@ export class Service {
     return parsedData;
   }
 
-  /*
-   * User Data and State Persistence
-   */
-
-  readonly #userDataKey = (username: string) => `users:${username}`;
-
-  async saveUserData(
-    username: string,
-    data: { [field: string]: string | number | boolean }
-  ): Promise<void> {
-    const key = this.#userDataKey(username);
-    const stringConfig = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key, String(value)])
-    );
-    await this.redis.hSet(key, stringConfig);
+  /************************************************************************
+   * User Result and Data
+   ************************************************************************/
+  async updateUserData(username: string): Promise<void> {
+    const userKey = this.#userDataKey(username);
+    const userData = await this.redis.hGetAll(userKey);
+    if (isToday(userData.lastPostCreatedDate)) {
+      await this.redis.hIncrBy(userKey, "postCreated", 1);
+    } else {
+      await this.redis.hSet(userKey, {
+        postCreated: "1",
+        lastPostCreatedDate: Date.now().toString(),
+      });
+    }
   }
 
-  async getUserData(username: string, postId: string): Promise<UserData> {
-    const score = await this.redis.zScore(
-      this.#postSolvedKey(postId),
-      username
-    );
+  async getUserData(username: string): Promise<UserData> {
+    const userKey = this.#userDataKey(username);
+    const userData = await this.redis.hGetAll(userKey);
+		if (!userData) {
+			await this.redis.hSet(userKey, {
+				username: username,
+        postCreated: "0",
+        lastPostCreatedDate: Date.now().toString(),
+      });
+		}
+    return {
+      username: username,
+      postCreated: parseInt(userData.postCreated || "0"),
+      lastPostCreatedDate: userData.lastPostCreatedDate || Date.now().toString(),
+    };
+  }
+
+  async getUserPostData(
+    username: string,
+    postId: string
+  ): Promise<UserPostData> {
+    const score = await this.redis.zScore(this.#postScoreKey(postId), username);
     const result = await this.redis.hGet(this.#postResultKey(postId), username);
 
-    const parsedData: UserData = {
+    const parsedData: UserPostData = {
       username,
-      solved: !!score,
+      solved: !!score && score != 0,
       score: score ? score : 0,
       result: result ? result : "",
     };
     return parsedData;
   }
 
-  /*
-   * Submit Comment
-   */
-  readonly #commentKey = (postId: string) => `comments:${postId}`;
-
-  async submitComment(postId: string, userData: UserData): Promise<Status> {
+  /************************************************************************
+   * Comments
+   ************************************************************************/
+  async submitComment(
+    postId: string,
+    userPostData: UserPostData
+  ): Promise<Status> {
     if (!this.reddit) {
       console.error("Reddit API client not available in Service");
       return {
@@ -236,12 +308,12 @@ export class Service {
       };
     }
 
-    const postCommentKey = this.#commentKey(postId);
+    const commentKey = this.#commentKey(postId);
 
     // check if comment had already been submitted
-    const submitted = !!(await this.redis.zScore(
-      postCommentKey,
-      userData.username
+    const submitted = !!(await this.redis.hGet(
+      commentKey,
+      userPostData.username
     ));
     if (submitted)
       return {
@@ -253,9 +325,9 @@ export class Service {
     try {
       comment = await this.reddit.submitComment({
         id: postId,
-        text: `u/${userData.username} solved this in ${userData.score} step${
-          userData.score > 1 ? "s" : ""
-        }: ${userData.result}`,
+        text: `u/${userPostData.username} solved this in ${
+          userPostData.score
+        } step${userPostData.score > 1 ? "s" : ""}: ${userPostData.result}`,
       });
     } catch (error) {
       if (error) {
@@ -269,9 +341,8 @@ export class Service {
     }
 
     // save the fact that user commented
-    await this.redis.zAdd(postCommentKey, {
-      member: userData.username,
-      score: 1,
+    await this.redis.hSet(commentKey, {
+      [userPostData.username]: "1"
     });
 
     this.ui.navigateTo(comment);
@@ -283,14 +354,19 @@ export class Service {
   }
 
   /************************************************************************
-   * Total Score (this code snippet taken from pixelry)
+   * Total Points (this code snippet is taken from pixelry)
    ************************************************************************/
-  async getTotalScores(maxLength: number = 10): Promise<SortedSetData[]> {
+  async getTotalPoints(maxLength: number = 10): Promise<SortedSetData[]> {
     const options: ZRangeOptions = { reverse: true, by: "rank" };
-    return await this.redis.zRange("scores", 0, maxLength - 1, options);
+    return await this.redis.zRange(
+      this.#totalPointsKey(),
+      0,
+      maxLength - 1,
+      options
+    );
   }
 
-  async getUserTotalScore(username: string | null): Promise<{
+  async getUserPoints(username: string | null): Promise<{
     rank: number;
     score: number;
   }> {
@@ -298,10 +374,10 @@ export class Service {
     if (!username) return defaultValue;
     try {
       const [rank, score, total] = await Promise.all([
-        this.redis.zRank("scores", username),
+        this.redis.zRank(this.#totalPointsKey(), username),
         // TODO: Remove .zScore when .zRank supports the WITHSCORE option
-        this.redis.zScore("scores", username),
-				this.redis.zCard("scores"),
+        this.redis.zScore(this.#totalPointsKey(), username),
+        this.redis.zCard(this.#totalPointsKey()),
       ]);
       return {
         rank: rank === undefined ? -1 : total - rank,

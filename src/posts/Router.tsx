@@ -8,7 +8,7 @@ import {
   PinnedPostData,
   PostData,
 } from "../types/PostData.js";
-import { UserData } from "../types/UserData.js";
+import { UserData, UserPostData } from "../types/UserData.js";
 import { LoadingState } from "../components/LoadingState.js";
 import { PinnedPost } from "./PinnedPost/PinnedPost.js";
 
@@ -26,15 +26,17 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
   const { data: username, loading: usernameLoading } = useAsync(
     async () => {
       if (!context.userId) return null; // Return early if no userId
-      const cacheKey = "cache:userId-username";
-      const cache = await context.redis.hGet(cacheKey, context.userId);
-      if (cache) {
-        return cache;
+      const userKey = `user:${context.userId}`;
+      const username = await context.redis.hGet(userKey, "username");
+      if (username) {
+        return username;
       } else {
         const user = await context.reddit.getUserById(context.userId);
         if (user) {
-          await context.redis.hSet(cacheKey, {
-            [context.userId]: user.username,
+          await context.redis.hSet(userKey, {
+            username: user.username,
+            postCreated: "0",
+            lastPostCreatedDate: Date.now().toString(),
           });
           return user.username;
         }
@@ -45,16 +47,8 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
       depends: [],
     }
   );
-  const { data: userData, loading: userDataLoading } = useAsync<UserData>(
-    async () => {
-      return await service.getUserData(username!, context.postId!);
-    },
-    {
-      depends: [username],
-    }
-  );
 
-  // Load the post data from Redis
+  // Load the post type and data from Redis
   const { data: postData, loading: postDataLoading } = useAsync<
     LaddergramPostData | PinnedPostData
   >(async () => {
@@ -67,13 +61,23 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     }
   });
 
+  const { data: userPostData, loading: userPostDataLoading } =
+    useAsync<UserPostData>(
+      async () => {
+        return await service.getUserPostData(username!, context.postId!);
+      },
+      {
+        depends: [username],
+      }
+    );
+
   //return loading
   if (
     usernameLoading ||
     postData === null ||
     postDataLoading ||
-    userData === null ||
-    userDataLoading
+    userPostData === null ||
+    userPostDataLoading
   ) {
     return <LoadingState />;
   }
@@ -83,12 +87,12 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
     laddergram: (
       <LaddergramPost
         postData={postData as LaddergramPostData}
-        userData={userData}
+        userPostData={userPostData}
       />
     ),
-    pinned: (<PinnedPost userData={userData}/>),
+    pinned: <PinnedPost username={username || ""} />,
   };
-	
+
   /*
    * Return the custom post unit
    */

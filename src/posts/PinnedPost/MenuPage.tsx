@@ -5,9 +5,10 @@ import { LoadingState } from "../../components/LoadingState.js";
 import { validateLaddergram } from "../../utils/validateLaddergram.js";
 import { UserData } from "../../types/UserData.js";
 import { findOptimalSolution } from "../../utils/findOptimalSolution.js";
+import { isToday } from "../../utils/isToday.js";
 interface MenuPageProps {
   screenWidth?: number;
-  userData: UserData;
+  username: string;
   onNavPress: (page: string) => void;
 }
 
@@ -15,7 +16,7 @@ export const MenuPage = (
   props: MenuPageProps,
   context: Context
 ): JSX.Element => {
-  const { screenWidth = 400, userData, onNavPress } = props;
+  const { screenWidth = 400, username, onNavPress } = props;
   const service = new Service(context);
   const titleLogoWidth = screenWidth < 400 ? screenWidth - 64 : 400;
 
@@ -41,6 +42,14 @@ export const MenuPage = (
       cancelLabel: "Cancel",
     },
     async (values) => {
+			
+			// verify that user hasn't submitted 3 posts for the day already
+			const userData = await service.getUserData(username);
+			if (userData.postCreated >= 3 && isToday(userData.lastPostCreatedDate)){
+				context.ui.showToast("You already submitted a max of 3 posts today. Try again tomorrow.");
+				return 
+			}
+
       const startWord = values.startword.toLowerCase();
       const targetWord = values.targetword.toLowerCase();
 
@@ -49,11 +58,11 @@ export const MenuPage = (
         context.ui.showToast(status.message);
         return;
       }
-			const optimal = findOptimalSolution(startWord, targetWord);
-			if (optimal === -1) {
-				context.ui.showToast("This puzzle is unsolvable.");
+      const optimal = findOptimalSolution(startWord, targetWord);
+      if (optimal === -1) {
+        context.ui.showToast("This puzzle is unsolvable.");
         return;
-			}
+      }
 
       // create laddergram post
       const subreddit = await context.reddit.getCurrentSubreddit();
@@ -69,11 +78,14 @@ export const MenuPage = (
         postType: "laddergram",
         startWord: startWord.toUpperCase(),
         targetWord: targetWord.toUpperCase(),
-        authorUsername: userData.username,
-				optimalSteps: optimal
+        authorUsername: username,
+        optimalSteps: optimal,
       });
 
-			// make a sticky comment
+			// update the user's data
+			await service.updateUserData(username);
+
+      // make a sticky comment
       let comment: Comment | undefined;
       try {
         comment = await context.reddit.submitComment({
@@ -149,7 +161,7 @@ export const MenuPage = (
           <MenuButton
             label="How To Play"
             screenWidth={screenWidth}
-            onPress={() => {
+            onPress={async () => {
               onNavPress("howtoplay");
             }}
           />

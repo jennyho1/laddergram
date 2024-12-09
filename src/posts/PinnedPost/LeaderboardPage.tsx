@@ -8,7 +8,7 @@ import { CustomIcon } from "../../components/CustomIcon.js";
 import { LeaderboardRows } from "../../components/LeaderboardRow.js";
 import { Container } from "../../components/Container.js";
 interface LeaderboardPageProps {
-  userData: UserData;
+  username: string;
   onClose: () => void;
 }
 
@@ -16,7 +16,7 @@ export const LeaderboardPage = (
   props: LeaderboardPageProps,
   context: Context
 ): JSX.Element => {
-  const { userData, onClose } = props;
+  const { username, onClose } = props;
   const service = new Service(context);
   const rowCount = 10;
 
@@ -29,8 +29,8 @@ export const LeaderboardPage = (
   }>(async () => {
     try {
       return {
-        leaderboard: await service.getTotalScores(rowCount),
-        user: await service.getUserTotalScore(userData.username),
+        leaderboard: await service.getTotalPoints(rowCount),
+        user: await service.getUserPoints(username),
       };
     } catch (error) {
       if (error) {
@@ -50,7 +50,7 @@ export const LeaderboardPage = (
   const userRow = showUser ? (
     <LeaderboardRows
       rank={data.user.rank}
-      username={userData.username}
+      username={username}
       score={data.user.score}
     />
   ) : null;

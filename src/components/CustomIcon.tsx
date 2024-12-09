@@ -14,8 +14,8 @@ export const CustomIcon = (props: CustomIconProps): JSX.Element => {
         url="woodCircle.png"
         imageHeight={500}
         imageWidth={500}
-        width="33px"
-        height="33px"
+        width="34px"
+        height="34px"
       />
       <icon name={icon} color="#4e1e15"></icon>
     </zstack>

@@ -5,7 +5,7 @@ import { GamePage } from "./GamePage.js";
 import { StatisticsPage } from "./StatisticsPage.js";
 import { PostData } from "../../types/PostData.js";
 import { Service } from "../../service/service.js";
-import { UserData } from "../../types/UserData.js";
+import { UserPostData } from "../../types/UserData.js";
 
 import words_3letter from "../../data/words_3letter.json";
 import words_4letter from "../../data/words_4letter.json";
@@ -13,7 +13,7 @@ import words_5letter from "../../data/words_5letter.json";
 import { countLetterDifferences } from "../../utils/countLetterDifferences.js";
 
 interface LaddergramPostProps {
-  userData: UserData;
+  userPostData: UserPostData;
   postData: PostData;
 }
 
@@ -21,14 +21,14 @@ export const LaddergramPost = (
   props: LaddergramPostProps,
   context: Context
 ): JSX.Element => {
-  const { userData, postData } = props;
+  const { userPostData, postData } = props;
   const service = new Service(context);
 
   const wordLength = postData.startWord.length;
-  const [page, setPage] = useState(userData.solved ? "game" : "info");
+  const [page, setPage] = useState(userPostData.solved ? "game" : "info");
   const [steps, setSteps] = useState(() => {
-    if (userData.solved) {
-      return userData.result
+    if (userPostData.solved) {
+      return userPostData.result
         .split(" -> ")
         .slice(1)
         .map((step) => step.split(""));
@@ -37,7 +37,7 @@ export const LaddergramPost = (
   });
   const [currentStep, setCurrentStep] = useState<string[]>([]);
   const [errorMessage, setErrorMessage] = useState<string>("");
-  const [solved, setSolved] = useState<boolean>(userData.solved);
+  const [solved, setSolved] = useState<boolean>(userPostData.solved);
   const [scrollNumber, setScrollNumber] = useState<number>(
     steps.length - (solved ? 5 : 4)
   );
@@ -81,7 +81,7 @@ export const LaddergramPost = (
         steps.length == 0
           ? postData.startWord
           : steps[steps.length - 1].join("");
-					
+
 			const changes = countLetterDifferences(prevWord, wordToEnter)
       if (changes == 0) {
         setErrorMessage("Did not change any characters");
@@ -90,7 +90,7 @@ export const LaddergramPost = (
       } else {
         //player tried it
         if (steps.length == 0) {
-          service.submitTried(postData.postId, userData.username);
+          service.submitTried(postData.postId, userPostData.username);
         }
         // PLAYER SOLVED IT
         if (wordToEnter == postData.targetWord) {
@@ -98,7 +98,7 @@ export const LaddergramPost = (
           // save results to redis
           service.submitSolvedResult({
             postId: postData.postId,
-            username: userData.username,
+            username: userPostData.username,
             result:
               `${postData.startWord} -> ` +
               steps.map((step) => step.join("")).join(" -> ") +
@@ -129,7 +129,7 @@ export const LaddergramPost = (
   };
 
   const onSubmitComment = async (): Promise<void> => {
-    const status = await service.submitComment(postData.postId, userData);
+    const status = await service.submitComment(postData.postId, userPostData);
     if (!status.success) context.ui.showToast(status.message);
   };
 
@@ -163,7 +163,7 @@ export const LaddergramPost = (
       />
     ),
     statistics: (
-      <StatisticsPage postData={postData} userData={userData} onNavPress={onNavPressHandler} />
+      <StatisticsPage postData={postData} userPostData={userPostData} onNavPress={onNavPressHandler} />
     ),
   };
 
