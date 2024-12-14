@@ -37,7 +37,7 @@ export const dailyChallenge = Devvit.addSchedulerJob({
     // update database with new post
     await context.redis.hSet(`post:${post.id}`, {
       postId: post.id,
-      postType: "laddergram",
+      postType: "daily",
       startWord: startWord.toUpperCase(),
       targetWord: targetWord.toUpperCase(),
       authorUsername: "laddergram",

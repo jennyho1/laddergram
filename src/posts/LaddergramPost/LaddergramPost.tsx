@@ -3,7 +3,7 @@ import { Context, Devvit, useState } from "@devvit/public-api";
 import { InfoPage } from "./InfoPage.js";
 import { GamePage } from "./GamePage.js";
 import { StatisticsPage } from "./StatisticsPage.js";
-import { PostData } from "../../types/PostData.js";
+import { LaddergramPostData, PostData } from "../../types/PostData.js";
 import { Service } from "../../service/service.js";
 import { UserPostData } from "../../types/UserData.js";
 
@@ -14,7 +14,7 @@ import { countLetterDifferences } from "../../utils/countLetterDifferences.js";
 
 interface LaddergramPostProps {
   userPostData: UserPostData;
-  postData: PostData;
+  postData: LaddergramPostData;
 }
 
 export const LaddergramPost = (
@@ -104,7 +104,8 @@ export const LaddergramPost = (
               steps.map((step) => step.join("")).join(" -> ") +
               ` -> ${currentStep.join("")}`,
             score: steps.length + 1,
-						wordLength
+						wordLength,
+						daily: postData.postType == "daily"
           });
         } else {
           setScrollNumber((n) => n + 1);
@@ -163,7 +164,7 @@ export const LaddergramPost = (
       />
     ),
     statistics: (
-      <StatisticsPage postData={postData} userPostData={userPostData} onNavPress={onNavPressHandler} />
+      <StatisticsPage postData={postData} solved={solved} score={steps.length} onNavPress={onNavPressHandler} />
     ),
   };
 

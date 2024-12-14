@@ -4,4 +4,5 @@ export type SolvedResultData = {
 	result: string;
 	score: number;
 	wordLength: number;
+	daily: boolean;
 };

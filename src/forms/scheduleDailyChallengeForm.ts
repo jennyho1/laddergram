@@ -15,6 +15,10 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
     ],
   },
   async (event, context) => {
+		// await addDailyChallengeWords(context)
+		// const record = await context.redis.hGetAll('dailyChallenges');
+		// console.log(record)
+
     const hour = event.values.hour;
     if (hour < 0 || hour > 23) {
       context.ui.showToast("Error: Hour input must be between 0-23.");
@@ -22,15 +26,13 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
     }
 
 		// check if a daily challenge job is already running
-		const jobId = await context.redis.get("dailyChallengeJobId");
+		const subreddit = await context.reddit.getCurrentSubreddit();
+		const key = `dailyChallengeJobId:${subreddit}`;
+		const jobId = await context.redis.get(key);
     if (jobId) {
       context.ui.showToast("Daily challenges are already running.");
       return;
     }
-
-		// await addDailyChallengeWords(context)
-		// const record = await context.redis.hGetAll('dailyChallenges');
-		// console.log(record)
 
 		// schedule job 
 		const newJobId = await context.scheduler.runJob({
@@ -39,8 +41,7 @@ export const scheduleDailyChallengeForm = Devvit.createForm(
     });
 
 		// save job to redis
-		await context.redis.set('dailyChallengeJobId', newJobId);
-
+		await context.redis.set(key, newJobId);
 		context.ui.showToast("Daily challenges are successfully running.")
 	}
 );

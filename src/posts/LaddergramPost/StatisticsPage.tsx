@@ -10,7 +10,8 @@ import { PostData } from "../../types/PostData.js";
 
 interface StatisticsPageProps {
   postData: PostData;
-  userPostData: UserPostData;
+	solved: boolean;
+	score: number;
   onNavPress: (page: string) => void;
 }
 
@@ -18,7 +19,7 @@ export const StatisticsPage = (
   props: StatisticsPageProps,
   context: Context
 ): JSX.Element => {
-  const { postData, userPostData, onNavPress } = props;
+  const { postData, solved, score, onNavPress } = props;
 
   const service = new Service(context);
   const rowCount = 10;
@@ -44,9 +45,9 @@ export const StatisticsPage = (
   const topGuessesRows = data.scores.map((item) => {
     const width = (item.score / highestCount) * maxWidth;
     const star =
-      userPostData.solved &&
-      (userPostData.score == parseInt(item.member) ||
-        (item.member.endsWith("+") && userPostData.score >= parseInt(item.member)));
+      solved &&
+      (score == parseInt(item.member) ||
+        (item.member.endsWith("+") && score >= parseInt(item.member)));
     return (
       <StatsBar
         score={item.member}

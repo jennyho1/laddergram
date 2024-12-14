@@ -6,7 +6,7 @@ import { LoadingState } from "./components/LoadingState.js";
 
 import { scheduleDailyChallengeForm } from "./forms/scheduleDailyChallengeForm.js";
 import { validateLaddergram } from "./utils/validateLaddergram.js";
-import { findOptimalSolution } from "./utils/findOptimalSolution.js";
+import { findOptimalSolution, findOptimalSolutionWithChain } from "./utils/findOptimalSolution.js";
 
 /*
  * Enable plugins
@@ -61,6 +61,10 @@ const newGameForm = Devvit.createForm(
 			context.ui.showToast(status.message);
 			return;
 		}
+
+		// const optimal = findOptimalSolutionWithChain(startWord, targetWord);
+		// console.log(optimal.chain)
+
 		const optimal = findOptimalSolution(startWord, targetWord);
 		if (optimal === -1) {
 			context.ui.showToast("This puzzle is unsolvable.");
@@ -153,15 +157,18 @@ Devvit.addMenuItem({
   location: "subreddit",
   forUserType: "moderator",
   onPress: async (_event, context) => {
+		const subreddit = await context.reddit.getCurrentSubreddit();
+		const key = `dailyChallengeJobId:${subreddit}`;
     // get the jobId from redis
-    const jobId = await context.redis.get("dailyChallengeJobId");
+    const jobId = await context.redis.get(key);
     if (!jobId) {
       context.ui.showToast("No daily challenges are currently running.");
       return;
     }
     // stop the job and remove jobId from redis
     await context.scheduler.cancelJob(jobId);
-    await context.redis.del("dailyChallengeJobId");
+    await context.redis.del(key);
+
 		context.ui.showToast("Daily challenges stopped.");
   },
 });

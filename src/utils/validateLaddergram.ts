@@ -4,6 +4,10 @@ import words_4letter from "../data/words_4letter.json";
 import words_5letter from "../data/words_5letter.json";
 import { countLetterDifferences } from "./countLetterDifferences.js";
 
+/**
+ * - startWord: string must be lowercase
+ * - targetWord: string must be lowercase
+ */
 export function validateLaddergram(
   startWord: string,
   targetWord: string
@@ -31,7 +35,7 @@ export function validateLaddergram(
       !wordList.includes(startWord) ||
       !wordList.includes(targetWord)
     ) {
-      message = "Invalid: Starting word is not in the word list";
+      message = "Invalid: At least one word is not in the word list";
     } else {
       success = true;
     }

@@ -165,6 +165,7 @@ export class Service {
     if (data.wordLength == 3) points = 2;
     else if (data.wordLength == 4) points = 4;
     else if (data.wordLength == 5) points = 8;
+		if (data.daily) points += 10;
     await this.redis.zIncrBy(this.#totalPointsKey(), data.username, points);
 
     // increment the number of people who got this score

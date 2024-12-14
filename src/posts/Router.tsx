@@ -90,6 +90,12 @@ export const Router: Devvit.CustomPostComponent = (context: Context) => {
         userPostData={userPostData}
       />
     ),
+		daily: (
+      <LaddergramPost
+        postData={postData as LaddergramPostData}
+        userPostData={userPostData}
+      />
+    ),
     pinned: <PinnedPost username={username || ""} />,
   };
 
