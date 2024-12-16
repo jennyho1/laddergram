@@ -7,9 +7,9 @@ import { LaddergramPostData, PostData } from "../../types/PostData.js";
 import { Service } from "../../service/service.js";
 import { UserPostData } from "../../types/UserData.js";
 
-import words_3letter from "../../data/words_3letter.json";
-import words_4letter from "../../data/words_4letter.json";
-import words_5letter from "../../data/words_5letter.json";
+import words_3letter from "../../data/words_3letter.json" assert { type: "json" };
+import words_4letter from "../../data/words_4letter.json" assert { type: "json" };
+import words_5letter from "../../data/words_5letter.json" assert { type: "json" };
 import { countLetterDifferences } from "../../utils/countLetterDifferences.js";
 
 interface LaddergramPostProps {
@@ -109,7 +109,7 @@ export const LaddergramPost = (
           });
         } else {
           setScrollNumber((n) => n + 1);
-          setScrollIndex(scrollNumber < 0 ? 0 : scrollNumber + 1);
+          setScrollIndex(scrollNumber+1 < 0 ? 0 : scrollNumber + 1);
         }
         setSteps([...steps, currentStep]);
         setCurrentStep([]);
@@ -124,6 +124,7 @@ export const LaddergramPost = (
       setCurrentStep(steps[steps.length - 1]);
       setSteps(steps.slice(0, -1));
       setScrollNumber((n) => n - 1);
+			setScrollIndex(scrollNumber-1 < 0 ? 0 : scrollNumber - 1);
     } else {
       setCurrentStep(currentStep.slice(0, -1));
     }

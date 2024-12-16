@@ -1,6 +1,6 @@
 import { Context } from "@devvit/public-api";
 
-import dailyWords from "../data/daily/daily_2025.json";
+import dailyWords from "../data/daily/daily_2025.json" assert { type: "json" };;
 import { validateLaddergram } from "./validateLaddergram.js";
 
 export async function addDailyChallengeWords(context: Context) {

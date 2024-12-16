@@ -1,5 +1,6 @@
 import { Devvit } from "@devvit/public-api";
 import { CustomButton } from "./CustomButton.js";
+import { MyText } from "./MyText.js";
 
 interface KeyboardButtonProps {
   errorMessage: string;
@@ -13,21 +14,23 @@ export const Keyboard = (props: KeyboardButtonProps): JSX.Element => {
     <vstack alignment="center middle">
       {errorMessage !== "" ? (
         <hstack
-          alignment="top center"
+          alignment="middle center"
           backgroundColor="rgba(143, 0, 0, 0.7)"
-          padding="xsmall"
+          height="26px"
           border="thin"
           borderColor="rgba(143, 0, 0)"
           cornerRadius="small"
         >
-          <text color="global-white" size="small">
+          <spacer width="4px" />
+          <MyText size={0.4} mode="light">
             {errorMessage}
-          </text>
+          </MyText>
+          <spacer width="4px" />
         </hstack>
       ) : (
         <spacer height="26px" />
       )}
-      <spacer height="6px" />
+      <spacer height="8px" />
 
       <hstack>
         {["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"].map((letter) => {
@@ -69,7 +72,7 @@ export const Keyboard = (props: KeyboardButtonProps): JSX.Element => {
           width={48}
           height={22}
           textSize={0.4}
-					overlay={true}
+          overlay={true}
           onPress={() => onKeyboardPress("enter")}
         />
         <spacer width="4px" />
@@ -87,12 +90,12 @@ export const Keyboard = (props: KeyboardButtonProps): JSX.Element => {
             </hstack>
           );
         })}
-				<CustomButton
+        <CustomButton
           label="Delete"
           width={52}
           height={22}
           textSize={0.4}
-					overlay={true}
+          overlay={true}
           onPress={() => onKeyboardPress("delete")}
         />
       </hstack>
