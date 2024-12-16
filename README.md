@@ -35,6 +35,7 @@ A competitive async word ladder game built on the [Reddit Developer Platform](ht
 ---
 
 ## About the Hackathon Submission
+- **App listing**: [laddergram](https://developers.reddit.com/apps/laddergram)
 - **Test Subreddit**: [r/Laddergram](https://www.reddit.com/r/Laddergram/)
 - **Demo Post**: [Laddergram Post](https://www.reddit.com/r/Laddergram/comments/1hft9q7/can_you_solve_this_laddergram/)
 - **Repo**: [GitHub Repository](https://github.com/jennyho1/laddergram)
