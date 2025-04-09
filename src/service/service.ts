@@ -299,7 +299,7 @@ export class Service {
    ************************************************************************/
   async submitComment(
     postId: string,
-    userPostData: UserPostData
+    username: string
   ): Promise<Status> {
     if (!this.reddit) {
       console.error("Reddit API client not available in Service");
@@ -314,7 +314,7 @@ export class Service {
     // check if comment had already been submitted
     const submitted = !!(await this.redis.hGet(
       commentKey,
-      userPostData.username
+      username
     ));
     if (submitted)
       return {
@@ -323,6 +323,8 @@ export class Service {
       };
 
     let comment: Comment | undefined;
+		let userPostData = await this.getUserPostData(username, postId)
+		
     try {
       comment = await this.reddit.submitComment({
         id: postId,

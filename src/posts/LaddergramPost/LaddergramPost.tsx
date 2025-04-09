@@ -7,9 +7,9 @@ import { LaddergramPostData, PostData } from "../../types/PostData.js";
 import { Service } from "../../service/service.js";
 import { UserPostData } from "../../types/UserData.js";
 
-import words_3letter from "../../data/words_3letter.json" assert { type: "json" };
-import words_4letter from "../../data/words_4letter.json" assert { type: "json" };
-import words_5letter from "../../data/words_5letter.json" assert { type: "json" };
+import words_3letter from "../../data/words_3letter.json" with { type: "json" };
+import words_4letter from "../../data/words_4letter.json" with { type: "json" };
+import words_5letter from "../../data/words_5letter.json" with { type: "json" };
 import { countLetterDifferences } from "../../utils/countLetterDifferences.js";
 
 interface LaddergramPostProps {
@@ -131,7 +131,7 @@ export const LaddergramPost = (
   };
 
   const onSubmitComment = async (): Promise<void> => {
-    const status = await service.submitComment(postData.postId, userPostData);
+    const status = await service.submitComment(postData.postId, userPostData.username);
     if (!status.success) context.ui.showToast(status.message);
   };
 
