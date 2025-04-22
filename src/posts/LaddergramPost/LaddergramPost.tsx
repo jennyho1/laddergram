@@ -151,6 +151,7 @@ export const LaddergramPost = (
     ),
     game: (
       <GamePage
+				screenWidth={context.dimensions?.width}
         postData={postData}
         steps={steps}
         solved={solved}

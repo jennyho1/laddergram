@@ -1,5 +1,5 @@
 import { Devvit } from "@devvit/public-api";
-import Glyphs from "../data/glyphs.json";
+import Glyphs from "../data/glyphs.json"  with { type: "json" };
 
 type SupportedGlyphs = keyof typeof Glyphs;
 

@@ -9,6 +9,7 @@ import { ArrowButton } from "../../components/ArrowButton.js";
 import { CustomButton } from "../../components/CustomButton.js";
 
 interface GamePageProps {
+	screenWidth: number | undefined;
   postData: PostData;
   steps: string[][];
   solved: boolean;
@@ -24,6 +25,7 @@ interface GamePageProps {
 
 export const GamePage = (props: GamePageProps): JSX.Element => {
   const {
+		screenWidth,
     postData,
     steps,
     solved,
@@ -43,8 +45,13 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
   const stepsToShow =
     solved || (scrollIndex < scrollNumber && scrollNumber > 0) ? 5 : 4;
 
+	let pagePadding: Devvit.Blocks.ContainerPadding  = "xsmall"
+	if (screenWidth){
+		pagePadding = screenWidth > 512 ? "large" : (screenWidth > 400 ? "medium" : "xsmall")
+	}
+
   return (
-    <vstack width="100%" height="100%" padding="large">
+    <vstack width="100%" height="100%" padding={pagePadding}>
       {/* nav */}
       <hstack gap="medium" alignment="middle center">
         <hstack grow>
@@ -166,6 +173,8 @@ export const GamePage = (props: GamePageProps): JSX.Element => {
         </vstack>
       ) : (
         <Keyboard
+					screenWidth={screenWidth}
+					pagePadding={pagePadding}
           errorMessage={errorMessage}
           onKeyboardPress={onKeyboardPress}
         />
