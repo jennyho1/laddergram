@@ -144,6 +144,7 @@ export const LaddergramPost = (
       <InfoPage
         screenWidth={context.dimensions?.width}
         authorUsername={postData.authorUsername}
+				optimalSteps={postData.optimalSteps}
         onPress={() => {
           setPage("game");
         }}

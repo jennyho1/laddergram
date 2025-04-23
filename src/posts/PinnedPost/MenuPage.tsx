@@ -67,7 +67,7 @@ export const MenuPage = (
       // create laddergram post
       const subreddit = await context.reddit.getCurrentSubreddit();
       const post = await context.reddit.submitPost({
-        title: "Can you solve this laddergram?",
+        title: `[${startWord.toUpperCase()} -> ${targetWord.toUpperCase()}] Can you solve this laddergram?`,
         subredditName: subreddit.name,
         preview: <LoadingState />,
       });
